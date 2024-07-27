@@ -4,12 +4,12 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { RouterProvider } from 'react-router-dom';
+import router from '../src/routes/route';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <RouterProvider router={router}>
-          <Toaster position="top-right" reverseOrder={false} />
           <App />
         </RouterProvider>
   </React.StrictMode>
