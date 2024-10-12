@@ -1,27 +1,36 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser")
+const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const router = require("./routes/route");
+const searchrouter = require("./routes/searchroute");
+const mongoose = require("mongoose");
+require('dotenv').config(); // Add this line to load environment variables
+
 const app = express();
-const port = 8000;
-const user=require('./models/user')
+const port = process.env.PORT || 8000; // Use PORT from .env or default to 8000
+
 // Middleware
-app.use(bodyParser.json());
-app.use(cors());
-const mongoose = require('mongoose');
-app.use(cors());
-app.use(cookieParser());
+app.use(express.json()); // Body parser for JSON
+app.use(cookieParser()); // Cookie parser
+
+// CORS configuration to allow your frontend to communicate with backend
+app.use(cors({
+    origin: 'http://localhost:3000', // Replace with your front-end origin
+    credentials: true // Allow credentials (cookies, authorization headers, etc.)
+}));
+
 // MongoDB connection
-mongoose.connect("mongodb+srv://nishant735123:5OLkAZAOCZC5RBmt@cluster0.lpk6kxz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
+mongoose.connect(process.env.MONGO_URI, { // Use environment variable for MongoDB URI
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
     .then(() => console.log("MongoDB connected successfully"))
     .catch(err => console.error("MongoDB connection error:", err));
 
+// Routes
+app.use('/user', router);
+app.use('/search', searchrouter);
 
-app.use('/user',router)
 // Start the server
 app.listen(port, () => {
     console.log(`Server is running at port ${port}`);

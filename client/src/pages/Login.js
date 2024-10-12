@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { ClipLoader } from 'react-spinners';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setToken, setUser } from '../redux';
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -9,6 +11,7 @@ const Login = () => {
     const [message, setMessage] = useState("");
     const [loggingIn, setLoggingIn] = useState(false);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const handleClick = async () => {
         try {
@@ -16,10 +19,13 @@ const Login = () => {
             const response = await axios.post('http://localhost:8000/user/login', {
                 email,
                 password,
-            });
-
-            setMessage(response.data.message);
-            console.log(response.data);
+            },{withCredentials:true});
+            if (response.data.success) {
+                navigate("/home");
+                setMessage(response.data.message);
+                dispatch(setUser(response.data.data))
+                console.log(response)
+            }
         } catch (error) {
             if (error.response) {
                 setMessage(error.response.data.message);
@@ -30,31 +36,33 @@ const Login = () => {
             }
         } finally {
             setLoggingIn(false);
-        
-                navigate("/home");
-            
+
         }
     };
 
+
+
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-400 to-purple-600">
-            <div className="bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg p-8 rounded-lg shadow-lg w-full max-w-md">
-                <h1 className="text-3xl font-bold text-center mb-6 text-white">Expense Tracker</h1>
-                <h2 className="text-2xl font-bold mb-4 text-white">Login</h2>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+                <h1 className="text-4xl font-semibold text-center mb-6 text-gray-800">Expense Tracker</h1>
+                <h2 className="text-2xl font-semibold mb-4 text-gray-700 text-center">Login</h2>
+
                 <div className="mb-4">
-                    <label className="block text-white">Email:</label>
+                    <label className="block text-gray-600 font-medium">Email:</label>
                     <input
                         type="text"
-                        className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+                        className="mt-1 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
                 </div>
+
                 <div className="mb-4">
-                    <label className="block text-white">Password:</label>
+                    <label className="block text-gray-600 font-medium">Password:</label>
                     <input
                         type="password"
-                        className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+                        className="mt-1 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
@@ -62,7 +70,7 @@ const Login = () => {
 
                 <button
                     type="submit"
-                    className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
+                    className="w-full bg-gray-800 text-white p-3 rounded-md hover:bg-gray-700 transition duration-300"
                     onClick={handleClick}
                 >
                     {loggingIn ? <ClipLoader size={30} color={"white"} loading={true} /> : "Login"}
@@ -73,7 +81,8 @@ const Login = () => {
                         {message}
                     </p>
                 ) : null}
-                <div className="text-center mt-4 text-blue-200 cursor-pointer" onClick={() => navigate('/signup')}>
+
+                <div className="text-center mt-4 text-gray-500 cursor-pointer hover:text-gray-800 transition duration-300" onClick={() => navigate('/signup')}>
                     Sign Up?
                 </div>
             </div>

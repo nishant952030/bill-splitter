@@ -4,7 +4,14 @@ const jwt = require('jsonwebtoken');
 
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password, profile_pic } = req.body;
+        const { name, email, password, username } = req.body;
+        const findUsername = await UserModel.findOne({ username });
+        if (findUsername) {
+            return res.status(400).json({
+                message: "username name not available",
+                success:false
+            })
+        }
         const findEmail = await UserModel.findOne({ email });
         if (findEmail) {
             return res.status(400).json({
@@ -15,7 +22,7 @@ const registerUser = async (req, res) => {
         const salt = await bcryptjs.genSalt(10);
         const hashpassword = await bcryptjs.hash(password, salt);
         const payload = {
-            name, email, profile_pic, password: hashpassword
+            name, email,username, password: hashpassword
         };
         const user = new UserModel(payload);
         await user.save();

@@ -1,14 +1,16 @@
-import logo from './logo.svg';
+
 import './App.css';
-import SignUp from './pages/SignUp';
+import Navbar from './pages/shared/Navbar';
+import { Outlet } from 'react-router-dom';
 
 function App() {
   return (
     <div className="App">
-      <SignUp />
-      <p className='text-red-500 text-7xl'></p>
+      <Navbar />
+      <Outlet />
     </div>
   );
 }
 
 export default App;
+

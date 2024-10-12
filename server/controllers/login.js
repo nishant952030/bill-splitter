@@ -1,5 +1,14 @@
 const UserModel = require("../models/user");
 const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+
+const generateAuthToken = (user) => {
+    const token = jwt.sign({ id: user._id.toString() }, process.env.SECRET_KEY, { expiresIn: '1h' });
+    console.log("token created",token)
+    return token;
+};
+
 
 const loginUser = async (req, res) => {
     try {
@@ -18,15 +27,40 @@ const loginUser = async (req, res) => {
                 error: true
             });
         }
+        const token = generateAuthToken(user);
+        const userObject = user.toObject();
+        delete userObject.password;  
+ 
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: false, 
+            sameSite: 'Lax',
+            path: '/',
+            maxAge: 3600000
+        });
+
+        console.log('Setting cookie:', {
+            name: 'token',
+            value: token.substring(0, 10) + '...',  
+            options: {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'Lax',
+                path: '/',
+                maxAge: 3600000
+            }
+        });
+
         return res.status(200).json({
             message: "Login successful",
-            data: user,
-            success: true
+            data: userObject,
+            success: true,
+            cookieSet: true 
         });
     } catch (error) {
-        console.log('Something went wrong', error);
+        console.error('Login error:', error);
         return res.status(500).json({
-            message: error.message || error,
+            message: error.message || "Internal server error",
             error: true
         });
     }
