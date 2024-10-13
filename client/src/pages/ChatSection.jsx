@@ -123,7 +123,7 @@ const ChatSection = () => {
               )}
             </div>
 
-            <div className={`bg-gray-200 h-16 w-full rounded-lg p-4 flex items-center justify-between `}>
+            <div className={`bg-gray-200 h-16 w-full rounded-lg p-4 flex items-center justify-between  `}>
               <input
                 type='text'
                 placeholder='Amount'
