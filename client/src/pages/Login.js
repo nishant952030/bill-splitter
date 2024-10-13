@@ -4,6 +4,7 @@ import { ClipLoader } from 'react-spinners';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setToken, setUser } from '../redux';
+import { userRoute } from '../components/constant';
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ const Login = () => {
     const handleClick = async () => {
         try {
             setLoggingIn(true);
-            const response = await axios.post('https://bill-server-dutu.onrender.com/user/login', {
+            const response = await axios.post(`${userRoute}/login`, {
                 email,
                 password,
             },{withCredentials:true});

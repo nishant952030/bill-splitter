@@ -6,6 +6,7 @@ import AddFriend from './AddFriend';
 import Sidebar from './Sidebar';
 import { setFriends } from '../redux';
 import { useDispatch, useSelector } from 'react-redux';
+import { searchRoute, userRoute } from '../components/constant';
 // Correct import path for setFriends
 
 const Home = () => {
@@ -52,7 +53,7 @@ const Home = () => {
         const fetchUser = async () => {
             try {
                 if (debouncedSearch.length >= 3) {
-                    const user = await axios.get("http://localhost:8000/search/search-user", {
+                    const user = await axios.get(`${searchRoute}/search-user`, {
                         params: { username: debouncedSearch },
                         withCredentials: true,
                     });
@@ -75,7 +76,7 @@ const Home = () => {
     useEffect(() => {
         const listUsers = async () => {
             try {
-                const users = await axios.get('http://localhost:8000/user/all-users', { withCredentials: true });
+                const users = await axios.get(`${userRoute}/all-users`, { withCredentials: true });
                 if (users.data.success) {
                     setFriendData(users.data.data);
                     dispatch(setFriends(users.data.data));

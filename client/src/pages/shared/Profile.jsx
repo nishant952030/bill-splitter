@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import { searchRoute } from '../../components/constant';
 
 const RequestsTable = ({ requests }) => {
+   console.log(searchRoute)
     const handleAction = async (request, action) => {
         try {
-            const response = await axios.get(`http://localhost:8000/search/action/${request.senderId._id}/${request._id}/${action}`, { withCredentials: true });
+            const response = await axios.get(`${searchRoute}/action/${request.senderId._id}/${request._id}/${action}`, { withCredentials: true });
             console.log(response);
         } catch (error) {
             console.error(error);
         }
     }
-    const name = () =>{
-        console.log("it is working fine")
-    }
+
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full bg-white shadow-md rounded-lg">
@@ -116,7 +116,7 @@ const Profile = () => {
         const fetchUserData = async () => {
             setLoading(true);
             try {
-                const response = await axios.get('http://localhost:8000/search/profile', {
+                const response = await axios.get(`${searchRoute}/profile`, {
                     withCredentials: true
                 });
                 if (response.data.success) {

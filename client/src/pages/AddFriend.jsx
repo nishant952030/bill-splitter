@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ClipLoader from "react-spinners/ClipLoader";
+import { searchRoute, userRoute } from '../components/constant';
 
 const AddFriend = () => {
     const [data, setData] = useState(null);
@@ -21,7 +22,7 @@ const AddFriend = () => {
         const fetchUser = async () => {
             setIsLoading(true);
             try {
-                const response = await axios.get("http://localhost:8000/search/search-user", {
+                const response = await axios.get(`${searchRoute}/search-user`, {
                     params: { username: debouncedSearch },
                     withCredentials: true,
                 });
@@ -43,7 +44,7 @@ const AddFriend = () => {
 
     const handleAddFriend = async (id) => {
         try {
-            const response = await axios.get(`http://localhost:8000/search/add-user/${id}`, { withCredentials: true });
+            const response = await axios.get(`${searchRoute}/add-user/${id}`, { withCredentials: true });
             console.log(response);
         } catch (error) {
             console.log(error);

@@ -71,7 +71,7 @@ const Navbar = () => {
                                 {!shouldShowHomeButton && (
                                     <button
                                         onClick={() => navigate('/add-expense')}
-                                        className="text-white px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
+                                        className="text-white px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
                                     >
                                         Add Expense
                                     </button>
@@ -110,13 +110,13 @@ const Navbar = () => {
                             <>
                                 <button
                                     onClick={() => navigate('/login')}
-                                    className="text-white px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
+                                        className="text-white px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
                                 >
                                     Login
                                 </button>
                                 <button
                                     onClick={() => navigate('/signup')}
-                                    className="text-white px-4 py-2 bg-green-500 rounded-lg hover:bg-green-600 transition-colors duration-300"
+                                        className="text-white px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
                                 >
                                     Signup
                                 </button>
@@ -141,7 +141,7 @@ const Navbar = () => {
                                 {!shouldShowHomeButton && (
                                     <button
                                         onClick={() => navigate('/add-expense')}
-                                        className="text-white w-full px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
+                                        className="text-white w-full px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800 transition-colors duration-300"
                                     >
                                         Add Expense
                                     </button>
@@ -179,13 +179,13 @@ const Navbar = () => {
                             <>
                                 <button
                                     onClick={() => navigate('/login')}
-                                    className="text-white w-full px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
+                                        className="text-white w-full px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
                                 >
                                     Login
                                 </button>
                                 <button
                                     onClick={() => navigate('/signup')}
-                                    className="text-white w-full px-4 py-2 bg-green-500 rounded-lg hover:bg-green-600 transition-colors duration-300"
+                                        className="text-white w-full px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
                                 >
                                     Signup
                                 </button>
