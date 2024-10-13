@@ -15,10 +15,25 @@ app.use(express.json()); // Body parser for JSON
 app.use(cookieParser()); // Cookie parser
 
 // CORS configuration to allow your frontend to communicate with backend
+const allowedOrigins = [
+    'https://bill-splitter-zeta.vercel.app', // Web app
+    'capacitor://localhost', // For Capacitor-based mobile apps (if using)
+    'ionic://localhost',     // For Ionic-based mobile apps (if using)
+    'http://localhost:3000', // For development (if your frontend runs on localhost)
+];
+
 app.use(cors({
-    origin: 'http://localhost:3000', // Replace with your front-end origin
-    credentials: true // Allow credentials (cookies, authorization headers, etc.)
+    origin: (origin, callback) => {
+        // Allow requests with no origin, like mobile apps
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true // Allow credentials (cookies, authorization headers)
 }));
+
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, { // Use environment variable for MongoDB URI

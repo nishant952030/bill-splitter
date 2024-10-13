@@ -98,22 +98,22 @@ const ChatSection = () => {
   }, []);
   const isSmall = screenWidth < 760
   return (
-    <div className={`chat-section pt-20 ml-4 pb-4 pr-3 rounded-md w-full ${isSmall ? "pt-14 mt-2" : ""} ${loading ? "flex justify-center items-center" : ""}`}>
+    <>
+    <div className={`chat-section ml-4 pr-3 rounded-md w-full ${isSmall ? "" : ""} ${loading ? "flex justify-center items-center" : ""}`}>
       {loading ? (
         <ClipLoader />
       ) : (
 
         <div className='flex flex-col justify-between h-full'>
-          {error && <div className='text-red-500 text-center'>{error}</div>}
-            <div className={`h-8 p-5 py-8 flex items-center capitalize bg-slate-800 text-white w-full text-lg rounded-lg md:mr-80`}>
+            <div className={`h-8 p-5 py-8 mt-2 flex items-center capitalize bg-slate-800 text-white w-full text-lg rounded-lg md:mr-80`}>
             <div className='mr-3'>
               <img className='h-8 w-8 rounded-full' alt='profile' src='https://images.unsplash.com/photo-1719864413962-069ac5ca4bb8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' />
             </div>
             {data?.name}
           </div>
 
-          <div className={`flex flex-col overflow-hidden h-full`}>
-            <div className={`flex flex-col-reverse overflow-y-auto max-h-[75vh]  ${isSmall ? "mb-" : ""}`}>
+          <div className={`flex flex-col overflow-hidden pb-3`}>
+            <div className={`flex flex-col-reverse overflow-y-auto max-h-[75vh] `}>
               {chats.length === 0 ? (
                 <h1 className='text-center pb-3'>No Gain No Pain</h1>
               ) : (
@@ -123,7 +123,7 @@ const ChatSection = () => {
               )}
             </div>
 
-            <div className={`bg-gray-200 h-16 w-full rounded-lg p-4 flex items-center justify-between ${isSmall ? "absolute bottom-2 left-0" : ""}`}>
+            <div className={`bg-gray-200 h-16 w-full rounded-lg p-4 flex items-center justify-between `}>
               <input
                 type='text'
                 placeholder='Amount'
@@ -151,7 +151,8 @@ const ChatSection = () => {
         </div>
 
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

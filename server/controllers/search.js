@@ -123,6 +123,7 @@ const findRequests = async (req, res) => {
         });
     }
 }
+
 const actionRequest = async (req, res) => {
     try {
         const userId = req.userId; // Current logged-in user
@@ -148,7 +149,6 @@ const actionRequest = async (req, res) => {
             await sender.save();
             await request.save();
 
-            // Delete the request after accepting
             await Request.deleteOne({ _id: requestId });
             await request.save();
             return res.status(200).json({
@@ -161,7 +161,6 @@ const actionRequest = async (req, res) => {
             request.status = 'rejected';
             await request.save();
 
-            // Delete the request after rejecting
             await Request.deleteOne({ _id: requestId });
 
             return res.status(200).json({
