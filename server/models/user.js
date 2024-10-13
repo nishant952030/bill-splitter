@@ -28,7 +28,14 @@ const userSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref:"Request"
         }
+    ],
+    expenses: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Expense"
+        }
     ]
+
 });
 
 module.exports = mongoose.model('User', userSchema);

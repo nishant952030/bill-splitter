@@ -1,12 +1,13 @@
 import App from "../App";
+import ChatSection from "../pages/ChatSection";
 import Home from "../pages/Home";
 import LandingPage from "../pages/Landing";
 import Login from "../pages/Login";
 import Profile from "../pages/shared/Profile";
+import Sidebar from "../pages/Sidebar";
 import SignUp from "../pages/SignUp";
 
 const { createBrowserRouter } = require("react-router-dom");
-
 const router = createBrowserRouter([
     {
         path: '/',
@@ -18,7 +19,13 @@ const router = createBrowserRouter([
             },
             {
                 path: 'home',
-                element: <Home />
+                element: <Home />,
+                children: [
+                    {
+                        path: 'user/:userId', // Nested route for user details
+                        element: <ChatSection/> // Create this component
+                    }
+                ]
             },
             {
                 path: 'login',
@@ -35,5 +42,6 @@ const router = createBrowserRouter([
         ]
     }
 ]);
+
 
 export default router;

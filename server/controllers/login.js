@@ -14,31 +14,34 @@ const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await UserModel.findOne({ email });
+
         if (!user) {
             return res.status(400).json({
                 message: "Invalid email or password",
                 error: true
             });
         }
+
         const isMatch = await bcryptjs.compare(password, user.password);
+
         if (!isMatch) {
             return res.status(400).json({
                 message: "Invalid email or password",
                 error: true
             });
         }
+
         const token = generateAuthToken(user);
         const userObject = user.toObject();
         delete userObject.password;  
  
         res.cookie('token', token, {
             httpOnly: true,
-            secure: false, 
-            sameSite: 'Lax',
-            path: '/',
+            secure: true, 
+            sameSite: 'None',
             maxAge: 3600000
         });
-
+        
         console.log('Setting cookie:', {
             name: 'token',
             value: token.substring(0, 10) + '...',  

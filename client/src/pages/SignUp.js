@@ -17,7 +17,7 @@ const SignUp = () => {
     const handleClick = async () => {
         try {
             setSigningUp(true);
-            const response = await axios.post('http://localhost:8000/user/signup', {
+            const response = await axios.post('https://bill-server-dutu.onrender.com/user/signup', {
                 name,
                 username,
                 email,

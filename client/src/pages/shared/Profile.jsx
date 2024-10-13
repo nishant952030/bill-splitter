@@ -143,7 +143,7 @@ const Profile = () => {
                     <div className="flex items-center space-x-6">
                         <img
                             src={userData.avatar || '/api/placeholder/150/150'}
-                            alt="User Avatar"
+                             alt=""
                             className="rounded-full w-32 h-32 border-4 border-white shadow-lg"
                         />
                         <div>

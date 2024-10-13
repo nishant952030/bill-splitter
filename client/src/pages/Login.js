@@ -16,7 +16,7 @@ const Login = () => {
     const handleClick = async () => {
         try {
             setLoggingIn(true);
-            const response = await axios.post('http://localhost:8000/user/login', {
+            const response = await axios.post('https://bill-server-dutu.onrender.com/user/login', {
                 email,
                 password,
             },{withCredentials:true});

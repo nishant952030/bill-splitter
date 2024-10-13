@@ -55,8 +55,8 @@ const searchUser = async (req, res) => {
                 status: requested.status,
                 isFriend: false,
                 me: false,
-                success:true
-                
+                success: true
+
             });
         }
 
@@ -138,7 +138,6 @@ const actionRequest = async (req, res) => {
                 success: false,
             });
         }
-
         const request = await Request.findById(requestId);
 
         if (action === 'accept') {
@@ -151,7 +150,7 @@ const actionRequest = async (req, res) => {
 
             // Delete the request after accepting
             await Request.deleteOne({ _id: requestId });
-
+            await request.save();
             return res.status(200).json({
                 message: "Friend request accepted",
                 success: true,
@@ -183,10 +182,31 @@ const actionRequest = async (req, res) => {
         });
     }
 };
+const getUser = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await UserModel.findById(userId);
 
+        if (!user) {
+            return res.status(404).json({ 
+                message: 'User not found',
+            success:false});
+        }
+
+        res.status(200).json({
+            message: "user fetched",
+            data: user,
+            success:true
+        });
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
 module.exports = {
     searchUser,
     addUser,
     findRequests,
-    actionRequest
+    actionRequest,
+    getUser
 };
