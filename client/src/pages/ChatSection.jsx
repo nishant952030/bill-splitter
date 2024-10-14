@@ -176,7 +176,7 @@ const ChatSection = () => {
                 )}
               </div>
 
-              <div className={`bg-gray-200 h-16 w-full rounded-lg p-4 flex items-center justify-between  ${isSmall ? "mt-5" : ""}  `}>
+              <div className={`bg-gray-200 h-16 w-full rounded-lg p-4 flex items-center justify-between  ${isSmall ? "mt-5 absolute left-0 bottom-3" : ""}  `}>
                 <input
                   type='text'
                   placeholder='Amount'
