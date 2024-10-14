@@ -4,7 +4,7 @@ import axios from 'axios';
 import AddFriend from './AddFriend';
 import Sidebar from './Sidebar';
 import { RotateCcw, TimerReset } from 'lucide-react';
-import { userRoute } from '../components/constant';
+import { expenseRoute, userRoute } from '../components/constant';
 import { useDispatch } from 'react-redux';
 import { setFriends } from '../redux';
 
@@ -36,7 +36,7 @@ const Home = () => {
         setError(null);
         try {
             console.log("Fetching recent expenses...");
-            const response = await axios.get('http://localhost:8000/expense/recent-expenses', { withCredentials: true });
+            const response = await axios.get(`${expenseRoute}/recent-expenses`, { withCredentials: true });
             console.log("Full response:", response);
 
             if (response.data && response.data.expenses && Array.isArray(response.data.expenses)) {
