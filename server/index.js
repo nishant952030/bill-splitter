@@ -5,7 +5,8 @@ const router = require("./routes/route");
 const searchrouter = require("./routes/searchroute");
 const expenserouter = require("./routes/expenseRoute");
 const mongoose = require("mongoose");
-require('dotenv').config(); // Add this line to load environment variables
+const Expense = require("./models/expense");
+require('dotenv').config(); // Load environment variables
 
 const app = express();
 const port = process.env.PORT || 8000; // Use PORT from .env or default to 8000
@@ -14,36 +15,38 @@ const port = process.env.PORT || 8000; // Use PORT from .env or default to 8000
 app.use(express.json()); // Body parser for JSON
 app.use(cookieParser()); // Cookie parser
 
-// CORS configuration to allow your frontend to communicate with backend
+// CORS configuration
 const allowedOrigins = [
-    'https://bill-splitter-zeta.vercel.app', // Web app
-    'capacitor://localhost', // For Capacitor-based mobile apps (if using)
-    'ionic://localhost',     // For Ionic-based mobile apps (if using)
-    'http://localhost:3000', // For development (if your frontend runs on localhost)
+    'https://bill-splitter-zeta.vercel.app',
+    'capacitor://localhost',
+    'ionic://localhost',
+    'http://localhost:3000',
 ];
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin, like mobile apps
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true // Allow credentials (cookies, authorization headers)
+    credentials: true // Allow credentials
 }));
 
-
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI, { // Use environment variable for MongoDB URI
+mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-    .then(() => console.log("MongoDB connected successfully"))
-    .catch(err => console.error("MongoDB connection error:", err));
+    .then(() => {
+        console.log("MongoDB connected successfully");
+    })
+    .catch(err => {
+        console.error("MongoDB connection error:", err);
+    });
 
-// Routes
+// Define routes
 app.use('/user', router);
 app.use('/search', searchrouter);
 app.use('/expense', expenserouter);

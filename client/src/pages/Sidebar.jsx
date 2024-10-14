@@ -43,7 +43,7 @@ const Sidebar = () => {
                 </button>
             )}
                
-            <div className={`${isSidebarVisible ? 'absolute left-0' : '-left-96'} ${screenWidth < 840 ? 'absolute' : 'relative'} transition-all duration-300 ease-in-out flex flex-col w-96 bg-gray-100 rounded-lg p-4 py-7  ${screenWidth < 840 ? "h-fit":""} z-20`}>
+            <div className={`${isSidebarVisible ? 'absolute left-0' : '-left-96'} ${screenWidth < 840 ? 'absolute' : 'relative'} transition-all duration-300 ease-in-out flex flex-col w-96 bg-gray-100 rounded-lg p-4 py-7  ${screenWidth < 840 ? "h-full":"h-full"} z-20`}>
                 
                 <h1 className="text-2xl font-bold mb-6 text-gray-800">Contacts</h1>
                 <div className="flex-grow overflow-y-scroll">

@@ -29,7 +29,8 @@ const expenseSchema = new mongoose.Schema({
         type: String,
         enum: ['pending', 'settled'],
         default: 'pending'
-    }
+    },
+    confirmedByReciever: { type: Boolean, default: false }
 });
 
 const Expense = mongoose.model('Expense', expenseSchema);

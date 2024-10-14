@@ -87,10 +87,44 @@ const getAllExpenses = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
-
+const updateStatus = async (req, res) => {
+   try {
+       const userId = req.useId;
+       const expenseId = req.params.expenseId;
+       const expense = await Expense.findOne({ _id: expenseId });
+       expense.status = 'settled';
+       await expense.save();
+       return res.status(200).json({
+           message: "setlled amount",
+           success: true,
+           data: expense
+       })
+   } catch (error) {
+       console.log(error);
+   }
+}
+const updateReciverConfirm = async (req, res) => {
+   try {
+       const userId = req.useId;
+       const expenseId = req.params.expenseId;
+       const expense = await Expense.findOne({ _id: expenseId });
+       expense.confirmedByReciever = true;
+       await expense.save();
+       console.log(expense)
+       return res.status(200).json({
+           message: "Confirmed by reciever",
+           success: true,
+           data: expense
+       })
+   } catch (error) {
+       console.log(error);
+   }
+}
 
 module.exports = {
     addExpense,
     getAllExpenses,
-    getRecent
+    getRecent,
+    updateStatus,
+    updateReciverConfirm
 }
