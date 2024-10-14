@@ -1,78 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { Search } from 'lucide-react';
 import AddFriend from './AddFriend';
 import Sidebar from './Sidebar';
+import { RotateCcw, TimerReset } from 'lucide-react';
+import { userRoute } from '../components/constant';
+import { useDispatch } from 'react-redux';
 import { setFriends } from '../redux';
-import { useDispatch, useSelector } from 'react-redux';
-import { searchRoute, userRoute } from '../components/constant';
-// Correct import path for setFriends
 
 const Home = () => {
-    const navigate = useNavigate();
-    const [data, setData] = useState(null);
-    const [search, setSearch] = useState('');
-    const [friendData, setFriendData] = useState([]);
-    const [debouncedSearch, setDebouncedSearch] = useState(search);
-    const { dosts } = useSelector(store => store.user);
-    const dispatch = useDispatch();
+    const [recents, setRecents] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
     const location = useLocation();
     const pathname = location.pathname;
-    const transactions = [
-        {
-            createdDate: '2024-10-10',
-            createdBy: 'John Doe',
-            amount: 500,
-            paidStatus: 'Paid',
-        },
-        {
-            createdDate: '2024-10-08',
-            createdBy: 'Jane Smith',
-            amount: 300,
-            paidStatus: 'Pending',
-        },
-        {
-            createdDate: '2024-10-05',
-            createdBy: 'Alice Johnson',
-            amount: 1000,
-            paidStatus: 'Paid',
-        },
-    ];
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearch(search);
-        }, 500);
-
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [search]);
-
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                if (debouncedSearch.length >= 3) {
-                    const user = await axios.get(`${searchRoute}/search-user`, {
-                        params: { username: debouncedSearch },
-                        withCredentials: true,
-                    });
-                    if (user.data.success) {
-                        setData(user.data.data);
-                    }
-                    console.log(user);
-                }
-            } catch (error) {
-                console.error('Error fetching user:', error);
-            }
-        };
-
-        if (debouncedSearch) {
-            fetchUser();
-        }
-    }, [debouncedSearch]);
-
-
+    const [friendData, setFriendData] = useState([]);
+    const dispatch = useDispatch();
     useEffect(() => {
         const listUsers = async () => {
             try {
@@ -88,61 +31,112 @@ const Home = () => {
         };
         listUsers();
     }, [dispatch]);
+    const fetchRecentExpenses = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            console.log("Fetching recent expenses...");
+            const response = await axios.get('http://localhost:8000/expense/recent-expenses', { withCredentials: true });
+            console.log("Full response:", response);
 
-
+            if (response.data && response.data.expenses && Array.isArray(response.data.expenses)) {
+                console.log("Setting recents with:", response.data.expenses);
+                setRecents(response.data.expenses);
+            } else {
+                console.log("No recent expenses found or invalid data format:", response.data);
+                setError("No recent expenses found or invalid data format");
+            }
+        } catch (error) {
+            console.error("Error fetching recent expenses:", error);
+            setError("Failed to fetch recent expenses");
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
-        console.log("friends data ", friendData);
-    }, [friendData]);
-       return (
-        <div className="flex">
-            <Sidebar />
+        fetchRecentExpenses();
+    }, [fetchRecentExpenses]);
 
-            {pathname === '/home' ? ( // Conditional rendering based on the current path
-                <div className="w-3/4 p-6">
-                    <AddFriend />
+    useEffect(() => {
+        console.log("Recents updated:", recents);
+    }, [recents]);
 
-                    <div className="w-full max-w-3xl mb-6">
-                        <h2 className="text-2xl font-bold mb-4">Recent Expenses</h2>
-                        {transactions.length > 0 ? (
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                                    <thead className="bg-gray-100">
-                                        <tr>
-                                            <th className="py-3 px-4 text-left">Date</th>
-                                            <th className="py-3 px-4 text-left">Created By</th>
-                                            <th className="py-3 px-4 text-left">Amount</th>
-                                            <th className="py-3 px-4 text-left">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {transactions.map((transaction, index) => (
-                                            <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                                                <td className="py-3 px-4">{transaction.createdDate}</td>
-                                                <td className="py-3 px-4">{transaction.createdBy}</td>
-                                                <td className="py-3 px-4">₹{transaction.amount}</td>
-                                                <td className="py-3 px-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${transaction.paidStatus === 'Paid'
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-yellow-100 text-yellow-800'
-                                                        }`}>
-                                                        {transaction.paidStatus}
-                                                    </span>
-                                                </td>
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString(); // Simplify the date format to MM/DD/YYYY or based on your locale
+    };
+
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setScreenWidth(window.innerWidth);
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+    const isSmall = screenWidth < 840
+    return (
+        <>
+            <div className={`${isSmall?"h-16":"h-20"}`}></div>
+            <div className={`flex h-full ${isSmall?"-pt-4":""}` }>
+                <Sidebar />
+                {pathname === '/home' && (
+                    <div className={` p-6 ${isSmall ? "flex flex-col justify-center w-full " :"w-3/4"}`}>
+                        <AddFriend />
+                        <div className="w-full max-w-3xl mb-6">
+                            <h2 className="text-2xl font-bold mb-4">Recent Expenses</h2>
+                            <button onClick={fetchRecentExpenses} className="mb-4 px-4 py-2 bg-slate-800 text-white rounded">
+                                <RotateCcw />
+                            </button>
+                            {isLoading ? (
+                                <p className="text-center text-gray-500">Loading...</p>
+                            ) : error ? (
+                                <p className="text-center text-red-500">{error}</p>
+                            ) : recents.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                                        <thead className="bg-gray-100">
+                                            <tr>
+                                                <th className="py-3 px-4 text-left">Date</th>
+                                                <th className="py-3 px-4 text-left">Created By</th>
+                                                <th className="py-3 px-4 text-left">Amount</th>
+                                                <th className="py-3 px-4 text-left">Status</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : (
-                            <p className="text-center text-gray-500">No transactions found.</p>
-                        )}
+                                        </thead>
+                                        <tbody>
+                                            {recents.map((recent, index) => (
+                                                <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                                                    <td className="py-3 px-4">{formatDate(recent.createdAt)}</td>
+                                                    <td className="py-3 px-4 capitalize">{recent.createdBy?.name}</td>
+                                                    <td className="py-3 px-4">₹{recent.amount}</td>
+                                                    <td className="py-3 px-4">
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${recent.status === 'settled'
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-yellow-100 text-yellow-800'
+                                                            }`}>
+                                                            {recent.status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <p className="text-center text-gray-500">No transactions found.</p>
+                            )}
+                        </div>
                     </div>
-                </div>
-            ) : null} {/* Ensure there's a fallback for when the path is not '/home' */}
-
-            <Outlet /> {/* Render child routes if any */}
-        </div>
+                )}
+                <Outlet />
+            </div>
+        </>
     );
 };
 

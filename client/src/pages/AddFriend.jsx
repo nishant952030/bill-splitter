@@ -54,7 +54,7 @@ const AddFriend = () => {
     return (
         <div className="p-4 mt-20">
             {/* Search Bar */}
-            <div className="flex  sm:flex-row gap-3 w-full md:w-3xl mx-auto">
+            <div className="flex  sm:flex-row gap-3 w-full md:max-w-3xl mx-auto">
                 <input
                     type="text"
                     value={search}

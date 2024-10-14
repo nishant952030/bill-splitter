@@ -96,7 +96,7 @@ const ChatSection = () => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
-  const isSmall = screenWidth < 760
+  const isSmall = screenWidth < 840
   return (
     <>
     <div className={`chat-section ml-4 pr-3 rounded-md w-full ${isSmall ? "" : ""} ${loading ? "flex justify-center items-center" : ""}`}>
@@ -104,8 +104,8 @@ const ChatSection = () => {
         <ClipLoader />
       ) : (
 
-        <div className='flex flex-col justify-between h-full'>
-            <div className={`h-8 p-5 py-8 mt-2 flex items-center capitalize bg-slate-800 text-white w-full text-lg rounded-lg md:mr-80`}>
+        <div className={`flex flex-col justify-between h-fit ${isSmall?"mt-1":"mt-0"}`}>
+            <div className={`h-8 p-5 ${isSmall?"mt-0":"mt-4"} py-8  flex items-center capitalize bg-slate-800 text-white w-full text-lg rounded-lg md:mr-80`}>
             <div className='mr-3'>
               <img className='h-8 w-8 rounded-full' alt='profile' src='https://images.unsplash.com/photo-1719864413962-069ac5ca4bb8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' />
             </div>
@@ -123,7 +123,7 @@ const ChatSection = () => {
               )}
             </div>
 
-            <div className={`bg-gray-200 h-16 w-full rounded-lg p-4 flex items-center justify-between  `}>
+                <div className={`bg-gray-200 h-16 w-full rounded-lg p-4 flex items-center justify-between  ${isSmall ? "mt-5" : ""}  `}>
               <input
                 type='text'
                 placeholder='Amount'

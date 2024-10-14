@@ -12,15 +12,15 @@ const Sidebar = () => {
     };
 
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-    const [isSidebarVisible, setIsSidebarVisible] = useState(true); 
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
     useEffect(() => {
         const handleResize = () => {
             setScreenWidth(window.innerWidth);
-            if (window.innerWidth < 720) {
-                setIsSidebarVisible(false); 
+            if (window.innerWidth < 840) {
+                setIsSidebarVisible(false);
             } else {
-                setIsSidebarVisible(true); 
+                setIsSidebarVisible(true);
             }
         };
 
@@ -32,36 +32,31 @@ const Sidebar = () => {
     }, []);
 
     const toggleSidebar = () => {
-        setIsSidebarVisible(!isSidebarVisible); 
+        setIsSidebarVisible(!isSidebarVisible);
     };
 
     return (
         <div>
-         
-            {screenWidth < 720 && (
-                <button
-                    onClick={toggleSidebar}
-                    className="absolute top-80 left-0 p-2 bg-gray-600 text-white rounded-r-lg  focus:outline-none z-50"
-                >
+
+            {screenWidth < 840 && ( <button onClick={toggleSidebar}className="absolute top-80 left-0 p-2 bg-gray-600 text-white rounded-r-lg  focus:outline-none z-50">
                     {isSidebarVisible ? <ChevronLeft /> : <ChevronRight className="" />}
                 </button>
             )}
-
-            
-            <div
-                className={`${isSidebarVisible ? 'absolute left-0' : '-left-96'
-                    } ${screenWidth < 720 ? 'absolute' : 'relative'} transition-all duration-300 ease-in-out flex flex-col w-96 bg-gray-100 rounded-lg p-4 min-h-screen z-20`}
-            >
+               
+            <div className={`${isSidebarVisible ? 'absolute left-0' : '-left-96'} ${screenWidth < 840 ? 'absolute' : 'relative'} transition-all duration-300 ease-in-out flex flex-col w-96 bg-gray-100 rounded-lg p-4 py-7  ${screenWidth < 840 ? "h-fit":""} z-20`}>
+                
                 <h1 className="text-2xl font-bold mb-6 text-gray-800">Contacts</h1>
                 <div className="flex-grow overflow-y-scroll">
                     {contacts.length > 0 ? (
                         contacts.map((user) => (
                             <div
-                                key={user.id} 
+                                key={user.id}
                                 onClick={() => {
-                                    setIsSidebarVisible(false)
+                                    if (screenWidth < 840) {
+                                        setIsSidebarVisible(false)
+                                    }
                                     handleClick(user._id)
-                                }} 
+                                }}
                                 className="p-4 bg-white rounded-lg mb-2 shadow hover:shadow-md hover:bg-gray-50 transition duration-300 ease-in-out cursor-pointer"
                             >
                                 <h2 className="text-lg font-semibold mb-1 text-gray-700 capitalize">

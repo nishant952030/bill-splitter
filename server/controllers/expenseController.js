@@ -42,6 +42,27 @@ const addExpense = async (req, res) => {
         res.status(500).json({ message: 'Internal server error', error });
     }
 }
+const getRecent = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const recents = await Expense.find({
+            createdWith: { $in: [userId] }
+        })
+            .populate('createdBy','name')  // Populate the 'createdBy' field
+            .limit(10).sort({ createdAt: -1 });  // Limit the result to 10 documents
+
+        return res.status(200).json({
+            message: "expenses",
+            expenses: recents
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: 'Server error' });
+    }
+};
+
+
+
 const getAllExpenses = async (req, res) => {
     try {
         const userId = req.userId;
@@ -70,5 +91,6 @@ const getAllExpenses = async (req, res) => {
 
 module.exports = {
     addExpense,
-    getAllExpenses
+    getAllExpenses,
+    getRecent
 }

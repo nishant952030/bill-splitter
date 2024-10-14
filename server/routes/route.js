@@ -8,7 +8,8 @@ const friendsList = require("../controllers/userDetails");
 const { getUser } = require("../controllers/search");
 
 router.post('/signup', registerUser);
-router.post('/login', login)
+router.post('/login', login.loginUser)
 router.get('/all-users',isAuthenticated,friendsList)
+router.get('/logout',login.logout)
 router.get('/get-details/:id',isAuthenticated,getUser)
 module.exports=router

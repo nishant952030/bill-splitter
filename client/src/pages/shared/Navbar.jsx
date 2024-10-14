@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import { useSelector,useDispatch } from 'react-redux';
+import axios from 'axios';
+import { userRoute } from '../../components/constant';
+import { setFriends, setUser } from '../../redux';
 
 const Navbar = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -11,11 +14,20 @@ const Navbar = () => {
     const { user } = useSelector(store => store.user);
     const navigate = useNavigate();
     const location = useLocation();
-
-    const handleLogout = () => {
-        setIsLoggedIn(false);
-        setIsProfileOpen(false); // Close profile dropdown when logging out
-        // Implement actual logout logic here
+    const dispatch=useDispatch()
+    const handleLogout = async() => {
+        setIsProfileOpen(false); 
+        try {
+            const logout = await axios.get(`${userRoute}/logout`, { withCredentials: true });
+            if (logout.data.success) {
+                dispatch(setUser(null));
+                dispatch(setFriends([]));
+                setIsLoggedIn(false);
+                navigate('/')
+            }
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     const toggleMenu = () => {
@@ -28,7 +40,7 @@ const Navbar = () => {
         }
     }, [user]);
 
-    const shouldShowHomeButton = location.pathname !== '/home';
+    const shouldShowHomeButton = location.pathname !== '/home' && isLoggedIn;
 
     const handleHomeClick = () => {
         if (user) {
@@ -41,7 +53,7 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="bg-gray-800  w-full z-50">
+        <nav className="bg-gray-800 fixed top-0 left-0 w-full z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center py-4">
                     <Link to="/" className="text-white text-lg font-semibold">
