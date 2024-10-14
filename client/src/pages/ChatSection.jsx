@@ -165,7 +165,7 @@ const ChatSection = () => {
               </div>
             </div>
 
-            <div className={`flex flex-col overflow-hidden pb-3`}>
+              <div className={`flex flex-col overflow-hidden pb-3 ${isSmall?"pb-20":""}`}>
               <div className={`flex flex-col-reverse overflow-y-auto max-h-[75vh] `}>
                 {chats.length === 0 ? (
                   <h1 className='text-center pb-3'>No Gain No Pain</h1>
