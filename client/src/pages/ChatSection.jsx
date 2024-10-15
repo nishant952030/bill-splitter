@@ -147,7 +147,7 @@ const ChatSection = () => {
         ) : (
 
           <div className={`flex flex-col justify-between h-fit ${isSmall ? "mt-1" : "mt-0"}`}>
-            <div className={`h-8 p-5 ${isSmall ? "mt-0" : "mt-4"} py-8  flex items-center justify-between capitalize bg-slate-800 text-white w-full text-lg rounded-lg md:mr-80`}>
+            <div className={`h-8 p-5 ${isSmall ? "mt-0" : "mt-4"} py-8  flex items-center justify-between capitalize bg-slate-800 text-white w-full text-lg rounded-lg `}>
               <div className='mr-3 flex gap-3'>
                 <img className='h-8 w-8 rounded-full' alt='profile' src='https://images.unsplash.com/photo-1719864413962-069ac5ca4bb8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' />
                 {data?.name}
@@ -165,8 +165,8 @@ const ChatSection = () => {
               </div>
             </div>
 
-              <div className={`flex flex-col overflow-hidden pb-3 ${isSmall?"pb-20":""}`}>
-              <div className={`flex flex-col-reverse overflow-y-auto max-h-[75vh] `}>
+              <div className={`flex flex-col overflow-hidden`}>
+              <div className={`flex flex-col-reverse overflow-y-auto ${isSmall?"max-h-[77vh]":" max-h-[75vh]"}`}>
                 {chats.length === 0 ? (
                   <h1 className='text-center pb-3'>No Gain No Pain</h1>
                 ) : (
@@ -176,7 +176,7 @@ const ChatSection = () => {
                 )}
               </div>
 
-              <div className={`bg-gray-200 h-16 w-full rounded-lg p-4 flex items-center justify-between  ${isSmall ? "mt-5 absolute left-0 bottom-3" : ""}  `}>
+              <div className={`bg-gray-200 h-16 w-full rounded-lg p-4 flex items-center justify-between`}>
                 <input
                   type='text'
                   placeholder='Amount'

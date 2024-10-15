@@ -1,5 +1,6 @@
 import App from "../App";
 import ChatSection from "../pages/ChatSection";
+import GroupChatSection from "../pages/GroupChatSection";
 import Home from "../pages/Home";
 import LandingPage from "../pages/Landing";
 import Login from "../pages/Login";
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
                     {
                         path: 'user/:userId', // Nested route for user details
                         element: <ChatSection/> // Create this component
+                    },
+                    {
+                        path: 'group/:groupId', 
+                        element: <GroupChatSection/> 
                     }
                 ]
             },

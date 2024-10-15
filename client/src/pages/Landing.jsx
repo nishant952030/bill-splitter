@@ -1,7 +1,57 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Coins, Users, Calculator, ArrowRight } from 'lucide-react';
+import axios from 'axios';
+import { userRoute } from '../components/constant';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setFriends, setUser } from '../redux';
+
+
 
 const LandingPage = () => {
+  
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const checkIsLoggedIn = async () => {
+      try {
+        const response = await axios.get(`${userRoute}/isLoggedIn`, { withCredentials: true });
+
+        if (!response.data.success) {
+     
+          const logout = await axios.get(`${userRoute}/logout`, { withCredentials: true });
+
+          if (logout.data.success) {
+            dispatch(setUser(null));  
+            dispatch(setFriends([])); 
+            navigate('/');            
+          }
+        }
+      } catch (error) {
+        if (error.response) {
+          const errorStatus = error.response.data.success;
+
+          if (error.response.status === 401 || !errorStatus) {
+            console.log('Token expired, logging out...');
+            const logout = await axios.get(`${userRoute}/logout`, { withCredentials: true });
+
+            if (logout.data.success) {
+              dispatch(setUser(null));
+              dispatch(setFriends([])); 
+              navigate('/');            
+            }
+          } 
+        } else {
+          console.log('An unexpected error occurred:', error);
+        }
+      }
+    };
+
+    checkIsLoggedIn();
+  }, [dispatch, navigate, userRoute]);
+
+; // Add dependencies if needed
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-100 to-blue-100 flex flex-col items-center justify-center p-4">
       <header className="text-center mb-12">

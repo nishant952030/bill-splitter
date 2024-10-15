@@ -12,4 +12,5 @@ router.post('/login', login.loginUser)
 router.get('/all-users',isAuthenticated,friendsList)
 router.get('/logout',login.logout)
 router.get('/get-details/:id',isAuthenticated,getUser)
+router.get('/isLoggedIn',isAuthenticated)
 module.exports=router

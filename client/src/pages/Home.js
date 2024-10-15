@@ -83,12 +83,11 @@ const Home = () => {
     const isSmall = screenWidth < 840
     return (
         <>
-            <div className={`${isSmall?"h-16":"h-20"}`}></div>
-            <div className={`flex h-full ${isSmall?"-pt-4":""}` }>
+            <div className={`flex h-full absolute left-0 w-full ${isSmall?"top-16":"top-20"}` }>
                 <Sidebar />
                 {pathname === '/home' && (
-                    <div className={` p-6 ${isSmall ? "flex flex-col justify-center w-full " :"w-3/4"}`}>
-                        <AddFriend />
+                    <div className={` p-6 ${isSmall ? "flex flex-col justify-start w-full " :"w-3/4"}`}>
+                        <AddFriend isSmall={isSmall} />
                         <div className="w-full max-w-3xl mb-6">
                             <h2 className="text-2xl font-bold mb-4">Recent Expenses</h2>
                             <button onClick={fetchRecentExpenses} className="mb-4 px-4 py-2 bg-slate-800 text-white rounded">

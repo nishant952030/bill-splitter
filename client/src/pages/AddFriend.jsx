@@ -2,9 +2,9 @@ import axios from 'axios';
 import { Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ClipLoader from "react-spinners/ClipLoader";
-import { searchRoute, userRoute } from '../components/constant';
+import { searchRoute } from '../components/constant';
 
-const AddFriend = () => {
+const AddFriend = ({isSmall}) => {
     const [data, setData] = useState(null);
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -29,7 +29,7 @@ const AddFriend = () => {
                 if (response.data.success) {
                     setData(response.data.data);
                     setResponse(response.data);
-                    console.log("response after  making search",response)
+                    console.log("response after making search", response);
                 }
             } catch (error) {
                 console.error('Error fetching user:', error);
@@ -42,19 +42,30 @@ const AddFriend = () => {
         fetchUser();
     }, [debouncedSearch]);
 
+    const [render, setRender] = useState(false);
     const handleAddFriend = async (id) => {
+        // Optimistic update: immediately set the status to 'pending'
+        const previousStatus = response.status;
+        setResponse({ ...response, status: 'pending' });
+
         try {
             const response = await axios.get(`${searchRoute}/add-user/${id}`, { withCredentials: true });
             console.log(response);
+
+            // If successful, maintain the 'pending' status
+            setRender(!render);
         } catch (error) {
             console.log(error);
+
+            // Revert back to the previous status if the request fails
+            setResponse({ ...response, status: previousStatus });
         }
-    }
+    };
 
     return (
-        <div className="p-4 mt-20">
+        <div className={`mb-4 ${isSmall?"mt-10":"mt-14"}`}>
             {/* Search Bar */}
-            <div className="flex  sm:flex-row gap-3 w-full md:max-w-3xl mx-auto">
+            <div className="flex sm:flex-row gap-3 w-full md:max-w-3xl justify-start">
                 <input
                     type="text"
                     value={search}
@@ -69,13 +80,15 @@ const AddFriend = () => {
 
             {/* Results or Loader */}
             {isLoading ? (
-                <li className='flex justify-center items-center'><ClipLoader
-                    loading={isLoading}
-                    size={26}
-                    aria-label="Loading Spinner"
-                    data-testid="loader"
-                    className='mt-9'
-                /></li>
+                <li className='flex justify-center items-center'>
+                    <ClipLoader
+                        loading={isLoading}
+                        size={26}
+                        aria-label="Loading Spinner"
+                        data-testid="loader"
+                        className='mt-9'
+                    />
+                </li>
             ) : (
                 debouncedSearch.length >= 3 && (
                     data && data.username ? (
@@ -83,42 +96,42 @@ const AddFriend = () => {
                             <div className='text-gray-700'>
                                 <p>Name: <span className='ml-1 uppercase'>{data.name}</span></p>
                                 <p>Username: <span className='ml-1'>{data.username}</span></p>
-                                </div>
-                                {response.me ? "" :
-                                    (
-                                        response.isFriend ? (
+                            </div>
+                            {response.me ? "" :
+                                (
+                                    response.isFriend ? (
+                                        <button
+                                            className='w-full md:w-20 mt-4 md:mt-0 h-10 bg-gray-800 text-white rounded hover:bg-gray-700 cursor-not-allowed'
+                                            disabled
+                                        >
+                                            Friends
+                                        </button>
+                                    ) : response.status === 'pending' ? (
+                                        <button
+                                            className='w-full md:w-20 mt-4 md:mt-0 h-10 bg-gray-800 text-white rounded hover:bg-gray-700'
+                                            disabled
+                                        >
+                                            Requested
+                                        </button>
+                                    ) : response.status === 'rejected' ? (
+                                        <div className='flex flex-col'>
+                                            <span className='text-gray-500'>Rejected</span>
                                             <button
-                                                className='w-full md:w-20 mt-4 md:mt-0 h-10 bg-gray-800 text-white rounded hover:bg-gray-700 cursor-not-allowed'
-                                                disabled
+                                                className='mt-2 w-full md:w-20 h-10 bg-gray-800 text-white rounded hover:bg-gray-700'
+                                                onClick={() => handleAddFriend(data._id)} // Function to send a new friend request
                                             >
-                                                Friends
+                                                Send Request
                                             </button>
-                                        ) : response.status === 'pending' ? (
-                                            <button
-                                                className='w-full md:w-20 mt-4 md:mt-0 h-10 bg-gray-800 text-white rounded hover:bg-gray-700'
-                                                disabled
-                                            >
-                                                Requested
-                                            </button>
-                                        ) : response.status === 'rejected' ? (
-                                            <div className='flex flex-col'>
-                                                <span className='text-gray-500'>Rejected</span>
-                                                <button
-                                                    className='mt-2 w-full md:w-20 h-10 bg-gray-800 text-white rounded hover:bg-gray-700'
-                                                    onClick={() => handleAddFriend(data._id)} // Function to send a new friend request
-                                                >
-                                                    Send Request
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <button
-                                                className='w-full md:w-20 mt-4 md:mt-0 h-10 bg-gray-800 text-white rounded hover:bg-gray-700'
-                                                onClick={() => handleAddFriend(data._id)} // Function to send a friend request
-                                            >
-                                                Add
-                                            </button>
-                                        )
-                                    )}
+                                        </div>
+                                    ) : (
+                                        <button
+                                            className='w-full md:w-20 mt-4 md:mt-0 h-10 bg-gray-800 text-white rounded hover:bg-gray-700'
+                                            onClick={() => handleAddFriend(data._id)} // Function to send a friend request
+                                        >
+                                            Add
+                                        </button>
+                                    )
+                                )}
                         </div>
                     ) : (
                         <div className='flex justify-center items-center bg-gray-100 rounded-md mt-4 p-4'>
