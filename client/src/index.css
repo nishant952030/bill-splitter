@@ -2,6 +2,3 @@
 @tailwind components;
 @tailwind utilities;
 /* global.css */
-body{
-    overflow-y: hidden;
-}

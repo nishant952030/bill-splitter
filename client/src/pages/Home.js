@@ -83,7 +83,7 @@ const Home = () => {
     const isSmall = screenWidth < 840
     return (
         <>
-            <div className={`flex h-full absolute left-0 w-full ${isSmall?"top-16":"top-20"}` }>
+            <div className={`flex h-fit absolute left-0 w-full ${isSmall?"top-16":"top-20"}` }>
                 <Sidebar />
                 {pathname === '/home' && (
                     <div className={` p-6 ${isSmall ? "flex flex-col justify-start w-full " :"w-3/4"}`}>
