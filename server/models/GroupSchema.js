@@ -6,17 +6,13 @@ const GroupSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
-    members: [{
-        userId: {
+    members: [
+        {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'User', 
+            ref: 'User',
             required: true,
-        },
-        joinedAt: {
-            type: Date,
-            default: Date.now,
-        },
-    }],
+        }
+    ],
     createdAt: {
         type: Date,
         default: Date.now,

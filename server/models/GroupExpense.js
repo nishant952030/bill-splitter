@@ -10,21 +10,19 @@ const GroupExpenseSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    splitAmount: {
+        type: Number,
+        required: true,
+    },
     description: {
         type: String,
         required: true,
         trim: true,
     },
     paidBy: {
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',  // Reference to the User model
-            required: true,
-        },
-        paidAt: {
-            type: Date,
-            default: Date.now,
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',  // Reference to the User model
+        required: true,
     },
     createdAt: {
         type: Date,

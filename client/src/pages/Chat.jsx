@@ -6,10 +6,11 @@ import ClipLoader from 'react-spinners/ClipLoader'; // Import ClipLoader
 
 const ChatMessage = ({ message, splitwith }) => {
     const [isLoading, setIsLoading] = useState(false); // Loading state
+    const [confirm, setConfirm] = useState(message.confirmedByReciever);
+    const [settled, setSettled] = useState(message.status === 'settled');
 
-    const isOutgoing = message.createdWith[0] === splitwith;
+    const isOutgoing = message.createdWith[0] === splitwith; // Check if outgoing
 
-    console.log("message", message.confirmedByReciever);
     const statusIcon = {
         pending: <Clock className="w-5 h-5" />,
         approved: <Check className="w-5 h-5 text-green-500" />,
@@ -21,8 +22,8 @@ const ChatMessage = ({ message, splitwith }) => {
         try {
             setIsLoading(true);
             const response = await axios.get(`${expenseRoute}/update-expense/${id}`, { withCredentials: true });
+            setSettled(true); // Update settled status
             console.log("update response", response);
-            setSettled(true); // Only set optimistic state after a successful response
         } catch (error) {
             console.log(error);
         } finally {
@@ -35,17 +36,14 @@ const ChatMessage = ({ message, splitwith }) => {
         try {
             setIsLoading(true);
             const response = await axios.get(`${expenseRoute}/reciever-confirm/${id}`, { withCredentials: true });
+            setConfirm(true); // Confirm payment
             console.log("update response", response);
-            setConfirm(true); // Only set optimistic state after a successful response
         } catch (error) {
             console.log(error);
         } finally {
             setIsLoading(false);
         }
     };
-
-    const [confirm, setConfirm] = useState(message.confirmedByReciever);
-    const [settled, setSettled] = useState(message.status === 'settled');
 
     return (
         <div className={`flex ${isOutgoing ? 'justify-end' : 'justify-start'} my-4`}>
@@ -70,11 +68,9 @@ const ChatMessage = ({ message, splitwith }) => {
                     </div>
 
                     <div className='flex flex-row gap-3'>
-                        {message.status === 'settled' ? (
-                            message.confirmedByReciever || confirm ? (
-                                <div>
-                                    <div className='p-3 bg-green-300 text-green-700 rounded-lg'>Settled</div>
-                                </div>
+                        {settled ? (
+                            confirm ? (
+                                <div className='p-3 bg-green-300 text-green-700 rounded-lg'>Settled</div>
                             ) : (
                                 isOutgoing ? (
                                     <button
@@ -91,14 +87,13 @@ const ChatMessage = ({ message, splitwith }) => {
                         ) : (
                             <>
                                 {!isOutgoing && (
-                                    settled ? <div className='text-red-500'>Not Confirmed by Receiver</div> :
-                                        <button
-                                            className={`bg-gray-600 text-white p-2 rounded-md hover:bg-gray-800 transition duration-300 ${isLoading && 'opacity-50 cursor-not-allowed'}`}
-                                            onClick={() => handlePaid(message._id)}
-                                            disabled={isLoading}
-                                        >
-                                            {isLoading ? <ClipLoader size={20} color="#fff" /> : 'Paid?'}
-                                        </button>
+                                    <button
+                                        className={`bg-gray-600 text-white p-2 rounded-md hover:bg-gray-800 transition duration-300 ${isLoading && 'opacity-50 cursor-not-allowed'}`}
+                                        onClick={() => handlePaid(message._id)}
+                                        disabled={isLoading}
+                                    >
+                                        {isLoading ? <ClipLoader size={20} color="#fff" /> : 'Paid?'}
+                                    </button>
                                 )}
                                 <div className="flex items-center bg-white px-3 py-1 rounded-full">
                                     <span className="text-sm mr-2 capitalize">{message.status}</span>

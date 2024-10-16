@@ -4,6 +4,7 @@ const cors = require("cors");
 const router = require("./routes/route");
 const searchrouter = require("./routes/searchroute");
 const expenserouter = require("./routes/expenseRoute");
+const grouprouter = require("./routes/group");
 const mongoose = require("mongoose");
 const Expense = require("./models/expense");
 require('dotenv').config(); // Load environment variables
@@ -11,7 +12,6 @@ require('dotenv').config(); // Load environment variables
 const app = express();
 const port = process.env.PORT || 8000; // Use PORT from .env or default to 8000
 
-// Middleware
 app.use(express.json()); // Body parser for JSON
 app.use(cookieParser()); // Cookie parser
 
@@ -50,8 +50,9 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/user', router);
 app.use('/search', searchrouter);
 app.use('/expense', expenserouter);
+app.use('/group', grouprouter);
 
 // Start the server
 app.listen(port, () => {
-    console.log(`Server is running at port ${port}`);
+    console.log(`Server is running at port ${ port }`);
 });

@@ -5,12 +5,13 @@ import { useSelector,useDispatch } from 'react-redux';
 import axios from 'axios';
 import { userRoute } from '../../components/constant';
 import { setFriends, setUser } from '../../redux';
+import GroupModal from '../GroupCreateDialog.jsx';
 
 const Navbar = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false); // Profile dropdown state
-
+    const [showGroupModal, setShowGroupModal] = useState(false);
     const { user } = useSelector(store => store.user);
     const navigate = useNavigate();
     const location = useLocation();
@@ -57,7 +58,7 @@ const Navbar = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center py-4">
                     <Link to="/" className="text-white text-lg font-semibold">
-                        Expense Tracker
+                        CashFlow
                     </Link>
 
                     {/* Mobile menu button */}
@@ -82,13 +83,15 @@ const Navbar = () => {
                             <>
                                 {!shouldShowHomeButton && (
                                     <button
-                                        onClick={() => navigate('/add-expense')}
+                                        onClick={() => {
+                                            setShowGroupModal(true)
+                                            console.log("button clicked")
+                                         }}
                                         className="text-white px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
                                     >
-                                        Add Expense
+                                        Create Group
                                     </button>
                                 )}
-
                                 {/* Profile button with avatar */}
                                 <div className="relative">
                                     <button onClick={toggleProfileDropdown} className="focus:outline-none">
@@ -139,11 +142,11 @@ const Navbar = () => {
 
                 {/* Mobile menu (visible only when open) */}
                 {isMenuOpen && (
-                    <div className="md:hidden flex flex-col space-y-2 mt-4">
+                    <div className="md:hidden flex flex-col space-y-4 mt-6">
                         {shouldShowHomeButton && (
                             <button
                                 onClick={handleHomeClick}
-                                className="text-white w-full px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800 transition-colors duration-300"
+                                className="text-white w-full px-5 py-3 bg-gradient-to-r from-gray-700 to-gray-900 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
                             >
                                 Home
                             </button>
@@ -152,34 +155,37 @@ const Navbar = () => {
                             <>
                                 {!shouldShowHomeButton && (
                                     <button
-                                        onClick={() => navigate('/add-expense')}
-                                        className="text-white w-full px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800 transition-colors duration-300"
+                                        onClick={() => setShowGroupModal(true)}
+                                        className="text-white w-full px-5 py-3 bg-gradient-to-r from-gray-700 to-gray-900 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
                                     >
-                                        Add Expense
+                                        Create Group
                                     </button>
                                 )}
 
                                 {/* Profile dropdown in mobile */}
                                 <div className="relative">
-                                    <button onClick={toggleProfileDropdown} className="focus:outline-none w-full text-left">
+                                    <button
+                                        onClick={toggleProfileDropdown}
+                                        className="focus:outline-none w-full text-left"
+                                    >
                                         <img
-                                            src="https://via.placeholder.com/40" // Replace with actual avatar
+                                            src="https://via.placeholder.com/40"
                                             alt="Avatar"
-                                            className="w-10 h-10 rounded-full mx-auto"
+                                            className="w-12 h-12 rounded-full mx-auto ring-2 ring-gray-400"
                                         />
                                     </button>
 
                                     {isProfileOpen && (
-                                        <div className="mt-2 w-full bg-white rounded-md shadow-lg">
+                                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl">
                                             <button
                                                 onClick={() => navigate('/profile')}
-                                                className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                                                className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-t-lg transition-all duration-300"
                                             >
                                                 Profile
                                             </button>
                                             <button
                                                 onClick={handleLogout}
-                                                className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                                                className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-b-lg transition-all duration-300"
                                             >
                                                 Logout
                                             </button>
@@ -191,13 +197,13 @@ const Navbar = () => {
                             <>
                                 <button
                                     onClick={() => navigate('/login')}
-                                        className="text-white w-full px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
+                                    className="text-white w-full px-5 py-3 bg-gradient-to-r from-green-500 to-green-700 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
                                 >
                                     Login
                                 </button>
                                 <button
                                     onClick={() => navigate('/signup')}
-                                        className="text-white w-full px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
+                                    className="text-white w-full px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-700 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
                                 >
                                     Signup
                                 </button>
@@ -205,7 +211,9 @@ const Navbar = () => {
                         )}
                     </div>
                 )}
+                {showGroupModal && <GroupModal onClose={() => setShowGroupModal(false)} />}
             </div>
+           
         </nav>
     );
 };

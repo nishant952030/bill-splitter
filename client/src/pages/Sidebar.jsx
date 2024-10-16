@@ -1,112 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { ChevronRight, ChevronLeft } from 'lucide-react'; // Import arrow icons
-import Switch from "react-switch";
+import { useNavigate } from 'react-router-dom'; 
+import { ChevronRight, ChevronLeft } from 'lucide-react'; 
+import { groupRoute } from '../components/constant';
+import axios from 'axios';
 
 const Sidebar = () => {
     const contacts = useSelector((store) => store.user.contacts);
-   
-    const groups = [
-        {
-            _id: 'group1',
-            name: 'Study Group',
-            members: [
-                { userId: 'user1', joinedAt: new Date('2023-08-01') },
-                { userId: 'user2', joinedAt: new Date('2023-08-05') },
-                { userId: 'user3', joinedAt: new Date('2023-08-10') }
-            ],
-            expenses: [
-                {
-                    amount: 150,
-                    description: 'Books Purchase',
-                    paidBy: {
-                        userId: 'user1',
-                        paidAt: new Date('2023-09-01'),
-                    },
-                    createdAt: new Date('2023-09-01'),
-                },
-                {
-                    amount: 200,
-                    description: 'Group Lunch',
-                    paidBy: {
-                        userId: 'user2',
-                        paidAt: new Date('2023-09-05'),
-                    },
-                    createdAt: new Date('2023-09-05'),
-                },
-            ],
-            createdAt: new Date('2023-07-20'),
-            updatedAt: new Date('2023-09-10'),
-        },
-        {
-            _id: 'group2',
-            name: 'Workout Buddies',
-            members: [
-                { userId: 'user2', joinedAt: new Date('2023-08-12') },
-                { userId: 'user4', joinedAt: new Date('2023-08-15') }
-            ],
-            expenses: [
-                {
-                    amount: 50,
-                    description: 'Gym Membership',
-                    paidBy: {
-                        userId: 'user4',
-                        paidAt: new Date('2023-09-10'),
-                    },
-                    createdAt: new Date('2023-09-10'),
-                }
-            ],
-            createdAt: new Date('2023-08-01'),
-            updatedAt: new Date('2023-09-12'),
-        },
-        {
-            _id: 'group3',
-            name: 'Gaming Clan',
-            members: [
-                { userId: 'user1', joinedAt: new Date('2023-08-20') },
-                { userId: 'user3', joinedAt: new Date('2023-08-22') },
-                { userId: 'user4', joinedAt: new Date('2023-08-25') }
-            ],
-            expenses: [
-                {
-                    amount: 100,
-                    description: 'Game Purchase',
-                    paidBy: {
-                        userId: 'user1',
-                        paidAt: new Date('2023-09-15'),
-                    },
-                    createdAt: new Date('2023-09-15'),
-                },
-                {
-                    amount: 75,
-                    description: 'In-game Items',
-                    paidBy: {
-                        userId: 'user3',
-                        paidAt: new Date('2023-09-18'),
-                    },
-                    createdAt: new Date('2023-09-18'),
-                },
-            ],
-            createdAt: new Date('2023-08-05'),
-            updatedAt: new Date('2023-09-20'),
-        },
-    ];
-
-
-    const navigate = useNavigate(); // Initialize navigate hook
+ 
+    const navigate = useNavigate(); 
    
     const handleClick = (id) => {
-        navigate(`/home/user/${id}`); // Navigate to the user/:id route
+        navigate(`/home/user/${id}`); 
     };
 
     const handleGroupClick = (id) => {
-        navigate(`/home/group/${id}`); // Navigate to the group/:id route
+        navigate(`/home/group/${id}`);
     };
 
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-    const [activeTab, setActiveTab] = useState('contacts'); // State to manage active tab (contacts or groups)
+    const [activeTab, setActiveTab] = useState('contacts'); 
     useEffect(() => {
         const handleResize = () => {
             setScreenWidth(window.innerWidth);
@@ -128,9 +42,26 @@ const Sidebar = () => {
         setIsSidebarVisible(!isSidebarVisible);
     };
 
-    const handleTabChange = (tab) => {
-        setActiveTab(tab); // Change the active tab
+    const [groups, setGroups] = useState([]);
+    const handleTabChange = async (tab) => {
+        setActiveTab(tab);
+
+        if (tab === 'groups') {
+            try {
+                const response = await axios.get(`${groupRoute}/get-groups`, { withCredentials: true });
+
+                if (response.data.success) {
+                    setGroups(response.data.groups);
+                    console.log("Groups retrieved:", response.data.groups);
+                } else {
+                    console.error("Failed to fetch groups:", response.statusText);
+                }
+            } catch (error) {
+                console.error("Error fetching groups:", error.message);
+            }
+        }
     };
+
 
     return (
         <div>
