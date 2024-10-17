@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
     user:null,
     token: null,
+    
     contacts:[]
 };
 
@@ -19,6 +20,7 @@ export const userSlice = createSlice({
         setFriends: (state, action) => {
             state.contacts=action.payload
         },
+      
         logout: () => initialState,
     }
 });

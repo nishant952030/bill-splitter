@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom'
 import { groupRoute } from '../components/constant';
 import axios from 'axios';
-import { Send, DollarSign, Receipt } from 'lucide-react';
+import { Send, Receipt } from 'lucide-react';
 
 const GroupChatSection = () => {
   const { groupId } = useParams();
@@ -37,7 +37,6 @@ const GroupChatSection = () => {
       try {
         const response = await axios.get(`${groupRoute}/get-group-details/${groupId}`, { withCredentials: true });
         if (response.data.success) {
-          console.log(response)
           setGroupName(response.data.groups[0].name);
           setMembers(response.data.groups[0].members.length);
         }
@@ -111,7 +110,7 @@ const GroupChatSection = () => {
       >
         {messages.map((message) => (
           <div
-            key={message.id}
+            key={message._id}
             className={`flex ${message.paidBy._id === data.userId ? 'justify-end' : 'justify-start'}`}
           >
             <div
@@ -151,10 +150,13 @@ const GroupChatSection = () => {
             <div className="relative">
 
               <input
-                type="number"
-                step="0.01"
+                type="text"
+                
                 value={newAmount}
-                onChange={(e) => setNewAmount(e.target.value)}
+                onChange={(e) => {
+                  if(!isNaN(e.target.value))
+                  setNewAmount(e.target.value)
+                }}
                 placeholder="Amount...₹"
                 className="w-full pl-10 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
               />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { useSelector,useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { userRoute } from '../../components/constant';
 import { setFriends, setUser } from '../../redux';
@@ -15,9 +15,9 @@ const Navbar = () => {
     const { user } = useSelector(store => store.user);
     const navigate = useNavigate();
     const location = useLocation();
-    const dispatch=useDispatch()
-    const handleLogout = async() => {
-        setIsProfileOpen(false); 
+    const dispatch = useDispatch()
+    const handleLogout = async () => {
+        setIsProfileOpen(false);
         try {
             const logout = await axios.get(`${userRoute}/logout`, { withCredentials: true });
             if (logout.data.success) {
@@ -86,7 +86,7 @@ const Navbar = () => {
                                         onClick={() => {
                                             setShowGroupModal(true)
                                             console.log("button clicked")
-                                         }}
+                                        }}
                                         className="text-white px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
                                     >
                                         Create Group
@@ -125,13 +125,13 @@ const Navbar = () => {
                             <>
                                 <button
                                     onClick={() => navigate('/login')}
-                                        className="text-white px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
+                                    className="text-white px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
                                 >
                                     Login
                                 </button>
                                 <button
                                     onClick={() => navigate('/signup')}
-                                        className="text-white px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
+                                    className="text-white px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800  transition-colors duration-300"
                                 >
                                     Signup
                                 </button>
@@ -213,7 +213,7 @@ const Navbar = () => {
                 )}
                 {showGroupModal && <GroupModal onClose={() => setShowGroupModal(false)} />}
             </div>
-           
+
         </nav>
     );
 };

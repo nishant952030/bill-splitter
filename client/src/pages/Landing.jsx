@@ -4,37 +4,31 @@ import axios from 'axios';
 import { userRoute } from '../components/constant';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setFriends, setUser } from '../redux';
+import { setFriends, setLoggedIn, setUser } from '../redux';
 
-
-
-const LandingPage = () => {
-  
+const LandingPage = () => { 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   useEffect(() => {
     const checkIsLoggedIn = async () => {
       try {
         const response = await axios.get(`${userRoute}/isLoggedIn`, { withCredentials: true });
-
+        console.log(response)
         if (!response.data.success) {
-     
           const logout = await axios.get(`${userRoute}/logout`, { withCredentials: true });
-
           if (logout.data.success) {
             dispatch(setUser(null));  
             dispatch(setFriends([])); 
+           
             navigate('/');            
           }
         }
       } catch (error) {
         if (error.response) {
           const errorStatus = error.response.data.success;
-
           if (error.response.status === 401 || !errorStatus) {
             console.log('Token expired, logging out...');
             const logout = await axios.get(`${userRoute}/logout`, { withCredentials: true });
-
             if (logout.data.success) {
               dispatch(setUser(null));
               dispatch(setFriends([])); 
@@ -46,11 +40,8 @@ const LandingPage = () => {
         }
       }
     };
-
     checkIsLoggedIn();
-  }, [dispatch, navigate, userRoute]);
-
-; // Add dependencies if needed
+  }, [dispatch, navigate, userRoute]);;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-100 to-blue-100 flex flex-col items-center justify-center p-4">
@@ -97,7 +88,6 @@ const LandingPage = () => {
     </div>
   );
 };
-
 const FeatureCard = ({ icon, title, description }) => {
   return (
     <div className="bg-teal-50 p-6 rounded-lg text-center">

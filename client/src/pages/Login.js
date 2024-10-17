@@ -3,7 +3,7 @@ import axios from 'axios';
 import { ClipLoader } from 'react-spinners';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setToken, setUser } from '../redux';
+import {  setToken, setUser } from '../redux';
 import { userRoute } from '../components/constant';
 
 const Login = () => {
@@ -20,9 +20,10 @@ const Login = () => {
             const response = await axios.post(`${userRoute}/login`, {
                 email,
                 password,
-            },{withCredentials:true});
+            }, { withCredentials: true });
+            
             if (response.data.success) {
-                navigate("/home");
+                navigate("/home",{replace: true});
                 setMessage(response.data.message);
                 dispatch(setUser(response.data.data))
                 console.log(response)

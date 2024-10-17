@@ -1,7 +1,6 @@
 const Expense = require("../models/expense");
 const GroupExpense = require("../models/GroupExpense");
 const Group = require("../models/GroupSchema");
-const { rawListeners } = require("../models/request");
 const UserModel = require("../models/user");
 
 const addExpense = async (req, res) => {
@@ -53,12 +52,20 @@ const getRecent = async (req, res) => {
                 { createdBy: userId }
             ]
         })
-            .populate('createdBy','name')  // Populate the 'createdBy' field
+            .populate('createdBy','name')  
             .limit(10).sort({ createdAt: -1 });  // Limit the result to 10 documents
 
         return res.status(200).json({
             message: "expenses",
             expenses: recents
+        /**
+         * Handles errors that occur during the execution of the function.
+         * Logs the error to the console and returns a 500 status code with a generic error message.
+         *
+         * @param {Error} error - The error object that was thrown.
+         * @param {Object} res - The Express response object.
+         * @returns {Object} - A JSON response with a 500 status code and a generic error message.
+         */
         });
     } catch (error) {
         console.log(error);

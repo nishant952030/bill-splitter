@@ -5,8 +5,8 @@ import AddFriend from './AddFriend';
 import Sidebar from './Sidebar';
 import { RotateCcw, TimerReset } from 'lucide-react';
 import { expenseRoute, userRoute } from '../components/constant';
-import { useDispatch } from 'react-redux';
-import { setFriends } from '../redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { setFriends, setLoggedIn } from '../redux';
 
 const Home = () => {
     const [recents, setRecents] = useState([]);
@@ -14,14 +14,16 @@ const Home = () => {
     const [error, setError] = useState(null);
     const location = useLocation();
     const pathname = location.pathname;
-    const [friendData, setFriendData] = useState([]);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { loggedIn } = useSelector(store => store.user);
     useEffect(() => {
         const listUsers = async () => {
+
             try {
                 const users = await axios.get(`${userRoute}/all-users`, { withCredentials: true });
                 if (users.data.success) {
-                    setFriendData(users.data.data);
+
                     dispatch(setFriends(users.data.data));
                 }
                 console.log(users);
@@ -31,6 +33,7 @@ const Home = () => {
         };
         listUsers();
     }, [dispatch]);
+
     const fetchRecentExpenses = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -64,7 +67,7 @@ const Home = () => {
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString(); // Simplify the date format to MM/DD/YYYY or based on your locale
+        return date.toLocaleDateString();
     };
 
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
@@ -83,10 +86,10 @@ const Home = () => {
     const isSmall = screenWidth < 840
     return (
         <>
-            <div className={`flex h-fit absolute left-0 w-full ${isSmall?"top-16":"top-20"}` }>
+            <div className={`flex h-fit absolute left-0 w-full ${isSmall ? "top-16" : "top-20"}`}>
                 <Sidebar />
                 {pathname === '/home' && (
-                    <div className={` p-6 ${isSmall ? "flex flex-col justify-start w-full " :"w-3/4"}`}>
+                    <div className={` p-6 ${isSmall ? "flex flex-col justify-start w-full " : "w-3/4"}`}>
                         <AddFriend isSmall={isSmall} />
                         <div className="w-full max-w-3xl mb-6">
                             <h2 className="text-2xl font-bold mb-4">Recent Expenses</h2>

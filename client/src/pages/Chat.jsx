@@ -2,49 +2,46 @@ import React, { useState } from 'react';
 import { ArrowRight, Clock, Check, X } from 'lucide-react';
 import axios from 'axios';
 import { expenseRoute } from '../components/constant';
-import ClipLoader from 'react-spinners/ClipLoader'; // Import ClipLoader
+import ClipLoader from 'react-spinners/ClipLoader';
 
 const ChatMessage = ({ message, splitwith }) => {
-    const [isLoading, setIsLoading] = useState(false); // Loading state
+    const [isLoading, setIsLoading] = useState(false);
     const [confirm, setConfirm] = useState(message.confirmedByReciever);
     const [settled, setSettled] = useState(message.status === 'settled');
 
-    const isOutgoing = message.createdWith[0] === splitwith; // Check if outgoing
+    const isOutgoing = message.createdWith[0] === splitwith;
 
     const statusIcon = {
         pending: <Clock className="w-5 h-5" />,
         approved: <Check className="w-5 h-5 text-green-500" />,
         rejected: <X className="w-5 h-5 text-red-500" />
     };
-
-    // Mark as Paid
     const handlePaid = async (id) => {
         try {
             setIsLoading(true);
-            const response = await axios.get(`${expenseRoute}/update-expense/${id}`, { withCredentials: true });
-            setSettled(true); // Update settled status
-            console.log("update response", response);
+            const response = await axios.get(`${expenseRoute}/update-expense/${id}`, { withCredentials: true })
+            if (response.data.success) {
+                setSettled(true);
+            }
         } catch (error) {
             console.log(error);
         } finally {
             setIsLoading(false);
         }
     };
-
-    // Receiver's Confirmation
     const receiverConfirmation = async (id) => {
         try {
             setIsLoading(true);
             const response = await axios.get(`${expenseRoute}/reciever-confirm/${id}`, { withCredentials: true });
-            setConfirm(true); // Confirm payment
-            console.log("update response", response);
+            if (response.data.success) {
+                setConfirm(true);
+            }
         } catch (error) {
             console.log(error);
         } finally {
             setIsLoading(false);
         }
     };
-
     return (
         <div className={`flex ${isOutgoing ? 'justify-end' : 'justify-start'} my-4`}>
             <div className={`w-3/4 ${isOutgoing ? 'bg-blue-100' : 'bg-gray-100'} rounded-lg p-4 shadow-md`}>

@@ -21,6 +21,7 @@ const Sidebar = () => {
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [activeTab, setActiveTab] = useState('contacts'); 
+
     useEffect(() => {
         const handleResize = () => {
             setScreenWidth(window.innerWidth);
@@ -30,9 +31,7 @@ const Sidebar = () => {
                 setIsSidebarVisible(true);
             }
         };
-
         window.addEventListener('resize', handleResize);
-
         return () => {
             window.removeEventListener('resize', handleResize);
         };
@@ -52,7 +51,6 @@ const Sidebar = () => {
 
                 if (response.data.success) {
                     setGroups(response.data.groups);
-                    console.log("Groups retrieved:", response.data.groups);
                 } else {
                     console.error("Failed to fetch groups:", response.statusText);
                 }

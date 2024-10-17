@@ -1,13 +1,14 @@
 import axios from 'axios';
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import "../components/css/index.css";
 import { Send } from 'lucide-react';
 import { ClipLoader } from 'react-spinners';
 import ChatMessage from './Chat';
 import { expenseRoute, userRoute } from '../components/constant';
 import { useSpring, animated } from '@react-spring/web';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { setFriends, setUser } from '../redux';
 const AnimatedNumber = ({ value }) => {
   const { number } = useSpring({
     from: { number: 0 },
@@ -24,6 +25,7 @@ const AnimatedNumber = ({ value }) => {
 
 const ChatSection = () => {
   const { userId } = useParams();
+ 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [chats, setChats] = useState([]);
@@ -34,6 +36,10 @@ const ChatSection = () => {
   const [sendLoading, setSendLoading] = useState(false);
   const [error, setError] = useState('');
   const chatContainerRef = useRef(null);
+  const navigate = useNavigate();
+  const { loggedIn } = useSelector(store => store.user);
+  const dispatch = useDispatch();
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -50,7 +56,6 @@ const ChatSection = () => {
         setLoading(false);
       }
     };
-
     const fetchChats = async () => {
       try {
         setLoading(true);
@@ -110,7 +115,6 @@ const ChatSection = () => {
     const fetchtotal = () => {
       let takeTotal = 0;
       let giveTotal = 0;
-
       for (const chat of dummy) {
         const isOutgoing = chat.createdWith[0] === userId;
         const completeSettle = chat.status === "settled" || chat.confirmedByReciever;
@@ -156,10 +160,7 @@ const ChatSection = () => {
       </div>
 
       {/* Chat Messages */}
-      <div
-        ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4"
-      >
+      <div ref={chatContainerRef} className="flex flex-col-reverse overflow-y-auto p-4 space-y-4" >
         {chats.length === 0 ? (
           <h1 className='text-center pb-3'>No Gain No Pain</h1>
         ) : (
