@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import AddFriend from './AddFriend';
 import Sidebar from './Sidebar';
-import { RotateCcw, TimerReset } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { expenseRoute, userRoute } from '../components/constant';
 import { useDispatch, useSelector } from 'react-redux';
-import { setFriends, setLoggedIn } from '../redux';
+import { setFriends } from '../redux';
+import { useSocket } from './shared/useSocket';
 
 const Home = () => {
     const [recents, setRecents] = useState([]);
@@ -15,38 +16,44 @@ const Home = () => {
     const location = useLocation();
     const pathname = location.pathname;
     const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const { loggedIn } = useSelector(store => store.user);
+    const socket = useSocket();
+    const { user } = useSelector((state) => state.user);
+
+    useEffect(() => {
+        if (socket && user?._id) {
+            socket.emit('registerUser', user._id);
+
+            return () => {
+                socket.off('new-expense');
+            };
+        }
+    }, [socket, user?._id]);
+
+
+    // Fetch friends list
     useEffect(() => {
         const listUsers = async () => {
-
             try {
                 const users = await axios.get(`${userRoute}/all-users`, { withCredentials: true });
                 if (users.data.success) {
-
                     dispatch(setFriends(users.data.data));
                 }
-                console.log(users);
             } catch (error) {
-                console.log(error);
+                console.error('Error fetching users:', error);
             }
         };
         listUsers();
     }, [dispatch]);
 
+    // Fetch recent expenses
     const fetchRecentExpenses = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            console.log("Fetching recent expenses...");
             const response = await axios.get(`${expenseRoute}/recent-expenses`, { withCredentials: true });
-            console.log("Full response:", response);
-
-            if (response.data && response.data.expenses && Array.isArray(response.data.expenses)) {
-                console.log("Setting recents with:", response.data.expenses);
+            if (response.data?.expenses && Array.isArray(response.data.expenses)) {
                 setRecents(response.data.expenses);
             } else {
-                console.log("No recent expenses found or invalid data format:", response.data);
                 setError("No recent expenses found or invalid data format");
             }
         } catch (error) {
@@ -61,35 +68,26 @@ const Home = () => {
         fetchRecentExpenses();
     }, [fetchRecentExpenses]);
 
-    useEffect(() => {
-        console.log("Recents updated:", recents);
-    }, [recents]);
-
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString();
     };
 
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-
     useEffect(() => {
-        const handleResize = () => {
-            setScreenWidth(window.innerWidth);
-        };
-
+        const handleResize = () => setScreenWidth(window.innerWidth);
         window.addEventListener('resize', handleResize);
-
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
-    const isSmall = screenWidth < 840
+
+    const isSmall = screenWidth < 840;
+
     return (
         <>
             <div className={`flex h-fit absolute left-0 w-full ${isSmall ? "top-16" : "top-20"}`}>
                 <Sidebar />
                 {pathname === '/home' && (
-                    <div className={` p-6 ${isSmall ? "flex flex-col justify-start w-full " : "w-3/4"}`}>
+                    <div className={`p-6 ${isSmall ? "flex flex-col justify-start w-full" : "w-3/4"}`}>
                         <AddFriend isSmall={isSmall} />
                         <div className="w-full max-w-3xl mb-6">
                             <h2 className="text-2xl font-bold mb-4">Recent Expenses</h2>
@@ -113,14 +111,14 @@ const Home = () => {
                                         </thead>
                                         <tbody>
                                             {recents.map((recent, index) => (
-                                                <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                                                <tr key={recent._id || index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                                                     <td className="py-3 px-4">{formatDate(recent.createdAt)}</td>
                                                     <td className="py-3 px-4 capitalize">{recent.createdBy?.name}</td>
                                                     <td className="py-3 px-4">₹{recent.amount}</td>
                                                     <td className="py-3 px-4">
                                                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${recent.status === 'settled'
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-yellow-100 text-yellow-800'
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : 'bg-yellow-100 text-yellow-800'
                                                             }`}>
                                                             {recent.status}
                                                         </span>

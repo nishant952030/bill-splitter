@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { ArrowRight, Clock, Check, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowRight, Clock, Check, X, MessageSquare } from 'lucide-react';
 import axios from 'axios';
 import { expenseRoute } from '../components/constant';
 import ClipLoader from 'react-spinners/ClipLoader';
+import { useSocket } from './shared/useSocket';
 
 const ChatMessage = ({ message, splitwith }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -16,12 +17,38 @@ const ChatMessage = ({ message, splitwith }) => {
         approved: <Check className="w-5 h-5 text-green-500" />,
         rejected: <X className="w-5 h-5 text-red-500" />
     };
+
+    const socket = useSocket();
+    useEffect(() => {
+        if (!socket) return; 
+
+        const handleUpdateSettled = (messageIO) => {
+            if (message._id===messageIO._id) {
+                setSettled(true);  
+            }
+        };
+        const handleConfirmReciver = (messageIO) => {
+            if (message._id === messageIO._id) {
+                setConfirm(true);
+                
+            }
+         }
+        socket.on('update-settled', handleUpdateSettled);
+        socket.on('update-reciever-confirm', handleConfirmReciver);
+        return () => {
+            socket.off('update-settled', handleUpdateSettled);
+        };
+    }, [splitwith, socket,message]);
+    
+    
     const handlePaid = async (id) => {
         try {
             setIsLoading(true);
             const response = await axios.get(`${expenseRoute}/update-expense/${id}`, { withCredentials: true })
-            if (response.data.success) {
-                setSettled(true);
+            if (response.data.success && socket && socket.connected) {
+                socket.emit("update-settled", message, (message) => {
+                    setSettled(true);
+                });
             }
         } catch (error) {
             console.log(error);
@@ -29,12 +56,18 @@ const ChatMessage = ({ message, splitwith }) => {
             setIsLoading(false);
         }
     };
+
+
+
     const receiverConfirmation = async (id) => {
         try {
             setIsLoading(true);
             const response = await axios.get(`${expenseRoute}/reciever-confirm/${id}`, { withCredentials: true });
-            if (response.data.success) {
-                setConfirm(true);
+            if (response.data.success && socket && socket.connected) {
+                socket.emit("update-reciever-confirm", message, (message) => {
+                    setConfirm(true);
+                });
+                socket.emit("update-count",message)
             }
         } catch (error) {
             console.log(error);
@@ -42,6 +75,8 @@ const ChatMessage = ({ message, splitwith }) => {
             setIsLoading(false);
         }
     };
+
+
     return (
         <div className={`flex ${isOutgoing ? 'justify-end' : 'justify-start'} my-4`}>
             <div className={`w-3/4 ${isOutgoing ? 'bg-blue-100' : 'bg-gray-100'} rounded-lg p-4 shadow-md`}>

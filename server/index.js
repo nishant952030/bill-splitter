@@ -1,22 +1,35 @@
+// Load environment variables
+require('dotenv').config();
+
+// Import modules
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const router = require("./routes/route");
-const searchrouter = require("./routes/searchroute");
-const expenserouter = require("./routes/expenseRoute");
-const grouprouter = require("./routes/group");
 const mongoose = require("mongoose");
-const Expense = require("./models/expense");
-require('dotenv').config(); // Load environment variables
+const http = require('http');
+const socketIo = require('socket.io');
 
+// Import routes
+const router = require("./routes/route");
+const searchRouter = require("./routes/searchroute");
+const expenseRouter = require("./routes/expenseRoute");
+const groupRouter = require("./routes/group");
+const { initializeSocket } = require('./socketConnection');
+
+// Initialize app and set port
 const app = express();
-const port = process.env.PORT || 8000; // Use PORT from .env or default to 8000
+const port = process.env.PORT || 8000;
 
-app.use(express.json()); // Body parser for JSON
-app.use(cookieParser()); // Cookie parser
+// Set up HTTP server and Socket.IO
+
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(cookieParser());
 
 // CORS configuration
 const allowedOrigins = [
+    '*',
     'https://bill-splitter-zeta.vercel.app',
     'capacitor://localhost',
     'ionic://localhost',
@@ -25,16 +38,15 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true // Allow credentials
+    credentials: true
 }));
 
-// MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -46,13 +58,15 @@ mongoose.connect(process.env.MONGO_URI, {
         console.error("MongoDB connection error:", err);
     });
 
-// Define routes
-app.use('/user', router);
-app.use('/search', searchrouter);
-app.use('/expense', expenserouter);
-app.use('/group', grouprouter);
+const httpServer = http.createServer(app);
+initializeSocket(httpServer);
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server is running at port ${ port }`);
+
+app.use('/user', router);
+app.use('/search', searchRouter);
+app.use('/expense', expenseRouter);
+app.use('/group', groupRouter);
+
+httpServer.listen(port, () => {
+    console.log(`Server is running at port ${port}`);
 });

@@ -7,16 +7,20 @@ import { RouterProvider } from 'react-router-dom';
 import router from '../src/routes/route';
 import { Provider } from 'react-redux';
 import { store } from './redux/store';
+import { SocketProvider } from './pages/shared/useSocket';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
-      <RouterProvider router={router}>
-        <App />
-        
-      </RouterProvider>
-    </Provider>
+    <SocketProvider>
+      <Provider store={store}>
+        <RouterProvider router={router}>
+          <App />
+
+        </RouterProvider>
+      </Provider>
+    </SocketProvider>
+
   </React.StrictMode>
 
 );

@@ -2,15 +2,18 @@ const Expense = require("../models/expense");
 const GroupExpense = require("../models/GroupExpense");
 const Group = require("../models/GroupSchema");
 const UserModel = require("../models/user");
+const { getIo } = require('../socketConnection.js');
 
+const {connectedSockets} = require("../socketConnection.js");
 const addExpense = async (req, res) => {
     try {
+        const ioInstance = getIo();
         const userId = req.userId;
         const splitWith = req.params.splitwith;
         const { amount, description } = req.body;
-
         const splitAmount = amount / 2;
 
+        // Create and save the expense
         const expense = new Expense({
             createdBy: userId,
             amount,
@@ -20,29 +23,24 @@ const addExpense = async (req, res) => {
         });
 
         await expense.save();
+        const populatedExpense = await Expense.findById(expense._id)
+            .populate('createdBy', 'name')
+            .populate('createdWith', 'name');
 
-        await UserModel.updateOne(
-            { _id: userId },
-            { $push: { expenses: expense._id } }
-        );
-
-        await UserModel.updateOne(
-            { _id: splitWith },
-            {
-                $push: { expenses: expense._id }
-            }
-        );
-        console.log('Expense created and balances updated successfully.');
+        // Update users' expense lists
+        await UserModel.updateOne({ _id: userId }, { $push: { expenses: expense._id } });
+        await UserModel.updateOne({ _id: splitWith }, { $push: { expenses: expense._id } });
         res.status(201).json({
             message: 'Expense created successfully',
-            expense,
+            expense: populatedExpense,
             success: true
         });
     } catch (error) {
         console.error('Error creating expense:', error);
         res.status(500).json({ message: 'Internal server error', error });
     }
-}
+};
+
 const getRecent = async (req, res) => {
     try {
         const userId = req.userId;
@@ -52,28 +50,19 @@ const getRecent = async (req, res) => {
                 { createdBy: userId }
             ]
         })
-            .populate('createdBy','name')  
-            .limit(10).sort({ createdAt: -1 });  // Limit the result to 10 documents
-
+            .populate('createdBy', 'name')
+            .limit(10)
+            .sort({ createdAt: -1 });
         return res.status(200).json({
             message: "expenses",
             expenses: recents
-        /**
-         * Handles errors that occur during the execution of the function.
-         * Logs the error to the console and returns a 500 status code with a generic error message.
-         *
-         * @param {Error} error - The error object that was thrown.
-         * @param {Object} res - The Express response object.
-         * @returns {Object} - A JSON response with a 500 status code and a generic error message.
-         */
         });
+
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: 'Server error' });
     }
 };
-
-
 
 const getAllExpenses = async (req, res) => {
     try {
@@ -82,10 +71,10 @@ const getAllExpenses = async (req, res) => {
         const expenses = await Expense.find({
             $or: [
                 { createdBy: userId, createdWith: { $in: [splitWith] } },
-                { createdBy: splitWith, createdWith: { $in: [userId] } } 
+                { createdBy: splitWith, createdWith: { $in: [userId] } }
             ]
         })
-            .sort({ createdAt: -1 });  
+            .sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: expenses });
 
     } catch (error) {
@@ -94,37 +83,37 @@ const getAllExpenses = async (req, res) => {
     }
 };
 const updateStatus = async (req, res) => {
-   try {
-       const userId = req.useId;
-       const expenseId = req.params.expenseId;
-       const expense = await Expense.findOne({ _id: expenseId });
-       expense.status = 'settled';
-       await expense.save();
-       return res.status(200).json({
-           message: "setlled amount",
-           success: true,
-           data: expense
-       })
-   } catch (error) {
-       console.log(error);
-   }
+    try {
+        const userId = req.useId;
+        const expenseId = req.params.expenseId;
+        const expense = await Expense.findOne({ _id: expenseId });
+        expense.status = 'settled';
+        await expense.save();
+        return res.status(200).json({
+            message: "setlled amount",
+            success: true,
+            data: expense
+        })
+    } catch (error) {
+        console.log(error);
+    }
 }
 const updateReciverConfirm = async (req, res) => {
-   try {
-       const userId = req.useId;
-       const expenseId = req.params.expenseId;
-       const expense = await Expense.findOne({ _id: expenseId });
-       expense.confirmedByReciever = true;
-       await expense.save();
-       console.log(expense)
-       return res.status(200).json({
-           message: "Confirmed by reciever",
-           success: true,
-           data: expense
-       })
-   } catch (error) {
-       console.log(error);
-   }
+    try {
+        const userId = req.useId;
+        const expenseId = req.params.expenseId;
+        const expense = await Expense.findOne({ _id: expenseId });
+        expense.confirmedByReciever = true;
+        await expense.save();
+        console.log(expense)
+        return res.status(200).json({
+            message: "Confirmed by reciever",
+            success: true,
+            data: expense
+        })
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 const CreateGroup = async (req, res) => {
@@ -221,7 +210,7 @@ const getGroupDetails = async (req, res) => {
             });
         }
 
-        const groups = await Group.find({_id:groupId});
+        const groups = await Group.find({ _id: groupId });
 
         if (groups.length === 0) {
             return res.status(404).json({
@@ -253,7 +242,7 @@ const createGroupExpense = async (req, res) => {
         const userId = req.userId;
         const { description, amount } = req.body;
 
-       
+
         const group = await Group.findById(groupId);
         if (!group) {
             return res.status(404).json({
@@ -262,7 +251,7 @@ const createGroupExpense = async (req, res) => {
             });
         }
 
-        const splitAmount = amount / group.members.length;  
+        const splitAmount = amount / group.members.length;
         const expenseData = {
             groupId,
             amount,
@@ -271,7 +260,7 @@ const createGroupExpense = async (req, res) => {
             paidBy: userId,
         };
 
-        
+
         const expense = await GroupExpense.create(expenseData);
 
         return res.status(200).json({
@@ -312,7 +301,7 @@ const getMygroupExpenses = async (req, res) => {
             data: expenses,
             success: true,
             groupId: groupId,
-            userId:userId
+            userId: userId
         })
     } catch (error) {
         console.log(error);

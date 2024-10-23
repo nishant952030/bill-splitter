@@ -1,77 +1,102 @@
 import axios from 'axios';
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import "../components/css/index.css";
+import { useParams } from 'react-router-dom';
 import { Send } from 'lucide-react';
 import { ClipLoader } from 'react-spinners';
 import ChatMessage from './Chat';
 import { expenseRoute, userRoute } from '../components/constant';
 import { useSpring, animated } from '@react-spring/web';
-import { useDispatch, useSelector } from 'react-redux';
-import { setFriends, setUser } from '../redux';
+import { useSocket } from './shared/useSocket';
+
 const AnimatedNumber = ({ value }) => {
   const { number } = useSpring({
     from: { number: 0 },
     to: { number: value },
     config: { duration: 1000 },
   });
-
-  return (
-    <animated.span>
-      {number.to((n) => n.toFixed(0))}
-    </animated.span>
-  );
+  return <animated.span>{number.to((n) => n.toFixed(0))}</animated.span>;
 };
 
 const ChatSection = () => {
   const { userId } = useParams();
- 
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [userLoading, setUserLoading] = useState(false);
+  const [chatsLoading, setChatsLoading] = useState(false);
   const [chats, setChats] = useState([]);
   const [dummy, setDummy] = useState([]);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
-  const [newData, setNewData] = useState({});
   const [sendLoading, setSendLoading] = useState(false);
   const [error, setError] = useState('');
   const chatContainerRef = useRef(null);
-  const navigate = useNavigate();
-  const { loggedIn } = useSelector(store => store.user);
-  const dispatch = useDispatch();
-
+  const socket = useSocket();
+  const [take, setTake] = useState(0);
+  const [give, setGive] = useState(0);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        setLoading(true);
+        setUserLoading(true);
         const response = await axios.get(`${userRoute}/get-details/${userId}`, { withCredentials: true });
-        if (response.data.success) {
-          setData(response.data.data);
-        }
+        if (response.data.success) setData(response.data.data);
       } catch (err) {
         console.error(err);
         setError("Failed to fetch user details.");
       } finally {
-        setLoading(false);
+        setUserLoading(false);
       }
     };
+    fetchUser();
+  }, [userId]);
+
+  useEffect(() => {
+    if (!socket) return; // Check if socket is available
+
+    const handleNewExpense = (newExpense) => {
+      if (newExpense.createdBy._id === userId) {
+        const newObject = {
+          _id: newExpense._id,
+          amount: newExpense.amount,
+          splitAmount: newExpense.splitAmount,
+          status: newExpense.status,
+          confirmedByReciever: newExpense.confirmedByReciever,
+          createdAt: newExpense.createdAt,
+          description: newExpense.description,
+          createdWith: newExpense.createdWith,
+        };
+        setDummy((prev) => [newObject, ...prev]);
+      }
+    };
+    const updateCount = (message) => {
+      if (message.createdBy === userId) {
+        setGive(prev => { return prev - message.splitAmount });
+      }
+      if (message.createdWith[0] === userId) {
+        setTake(prev=>{return prev-message.splitAmount})
+      }
+   }
+    socket.on('new-expense', handleNewExpense);
+    socket.on('update-count', updateCount);
+    return () => {
+      socket.off('new-expense', handleNewExpense);
+    };
+  }, [userId, socket]);
+
+  useEffect(() => {
     const fetchChats = async () => {
       try {
-        setLoading(true);
+        setChatsLoading(true);
         const response = await axios.get(`${expenseRoute}/all-expenses/${userId}`, { withCredentials: true });
         setDummy(response.data.data);
       } catch (error) {
         console.error(error);
         setError("Failed to fetch expenses.");
       } finally {
-        setLoading(false);
+        setChatsLoading(false);
       }
     };
-
-    fetchUser();
     fetchChats();
-  }, [userId, newData]);
+  }, [userId]);
 
   useEffect(() => {
     setChats(dummy);
@@ -82,24 +107,37 @@ const ChatSection = () => {
 
   const handleAddExpense = async (e) => {
     e.preventDefault();
-    if (!amount || isNaN(amount) || !description) {
+    if (!amount.trim() || isNaN(Number(amount.trim())) || !description.trim()) {
       alert("Please enter a valid amount and description.");
       return;
     }
 
     const newExpense = {
-      amount: Number(amount),
-      description: description,
+      amount: Number(amount.trim()),
+      description: description.trim(),
     };
 
     try {
       setSendLoading(true);
       const response = await axios.post(`${expenseRoute}/create-expense/${userId}`, newExpense, { withCredentials: true });
-      if (response.data.success) {
-        setNewData(response.data.data);
-        setAmount('');
-        setDescription('');
+      if (response.data.success && socket && socket.connected) {
+        socket.emit('new-expense', response.data.expense, (newExpense) => {
+          const newObject = {
+            _id: newExpense._id,
+            amount: newExpense.amount,
+            splitAmount: newExpense.splitAmount,
+            status: newExpense.status,
+            confirmedByReciever: newExpense.confirmedByReciever,
+            createdAt: newExpense.createdAt,
+            description: newExpense.description,
+            createdWith: [newExpense.createdWith[0]._id],
+          };
+          setDummy((prev) => [newObject, ...prev]);
+
+        });
       }
+      setAmount('');
+      setDescription('');
     } catch (error) {
       console.error('Error adding expense:', error);
       setError("Failed to add expense.");
@@ -108,36 +146,28 @@ const ChatSection = () => {
     }
   };
 
-  const [take, setTake] = useState(0);
-  const [give, setGive] = useState(0);
-
   useEffect(() => {
     const fetchtotal = () => {
-      let takeTotal = 0;
-      let giveTotal = 0;
-      for (const chat of dummy) {
-        const isOutgoing = chat.createdWith[0] === userId;
-        const completeSettle = chat.status === "settled" || chat.confirmedByReciever;
-        if (!completeSettle) {
-          if (isOutgoing) {
-            takeTotal += chat.splitAmount;
-          } else {
-            giveTotal += chat.splitAmount;
+      const { takeTotal, giveTotal } = dummy.reduce(
+        (acc, chat) => {
+          const isOutgoing = chat.createdWith[0] === userId;
+          const completeSettle = chat.status === "settled" || chat.confirmedByReciever;
+          if (!completeSettle) {
+            if (isOutgoing) acc.takeTotal += chat.splitAmount;
+            else acc.giveTotal += chat.splitAmount;
           }
-        }
-      }
-
+          return acc;
+        },
+        { takeTotal: 0, giveTotal: 0 }
+      );
       setTake(takeTotal);
       setGive(giveTotal);
     };
-
     fetchtotal();
   }, [dummy, userId]);
 
-
   return (
-    <div className=" ml-2 flex flex-col max-h-[91vh] bg-gray-100 w-full max-w-5xl">
-      {/* Header */}
+    <div className="ml-2 flex flex-col max-h-[91vh] bg-gray-100 w-full max-w-5xl">
       <div className="bg-white shadow-sm p-4 flex items-center justify-between">
         <div className="flex items-center">
           <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
@@ -159,18 +189,14 @@ const ChatSection = () => {
         </div>
       </div>
 
-      {/* Chat Messages */}
-      <div ref={chatContainerRef} className="flex flex-col-reverse overflow-y-auto p-4 space-y-4" >
+      <div ref={chatContainerRef} className="flex flex-col-reverse overflow-y-auto p-4 space-y-4">
         {chats.length === 0 ? (
           <h1 className='text-center pb-3'>No Gain No Pain</h1>
         ) : (
-          chats.map((chat, index) => (
-            <ChatMessage key={index} message={chat} splitwith={userId} />
-          ))
+          chats.map((chat, index) => <ChatMessage key={index} message={chat} splitwith={userId} />)
         )}
       </div>
 
-      {/* Input Field */}
       <div className="bg-gray-200 h-16 w-full rounded-lg p-4 flex items-center justify-between">
         <input
           type='text'
