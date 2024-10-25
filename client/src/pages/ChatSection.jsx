@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Send } from 'lucide-react';
 import { ClipLoader } from 'react-spinners';
 import ChatMessage from './Chat';
-import { expenseRoute, userRoute } from '../components/constant';
+import { expenseRoute, notificationRoute, userRoute } from '../components/constant';
 import { useSpring, animated } from '@react-spring/web';
 import { useSocket } from './shared/useSocket';
 
@@ -120,22 +120,41 @@ const ChatSection = () => {
     try {
       setSendLoading(true);
       const response = await axios.post(`${expenseRoute}/create-expense/${userId}`, newExpense, { withCredentials: true });
-      if (response.data.success && socket && socket.connected) {
-        socket.emit('new-expense', response.data.expense, (newExpense) => {
-          const newObject = {
-            _id: newExpense._id,
-            amount: newExpense.amount,
-            splitAmount: newExpense.splitAmount,
-            status: newExpense.status,
-            confirmedByReciever: newExpense.confirmedByReciever,
-            createdAt: newExpense.createdAt,
-            description: newExpense.description,
-            createdWith: [newExpense.createdWith[0]._id],
-          };
-          setDummy((prev) => [newObject, ...prev]);
 
-        });
+      if (response.data.success && socket && socket.connected) {
+        const newExpenseData = response.data.expense;
+
+        // Create the new object for local state
+        const newObject = {
+          _id: newExpenseData._id,
+          amount: newExpenseData.amount,
+          splitAmount: newExpenseData.splitAmount,
+          status: newExpenseData.status,
+          confirmedByReceiver: newExpenseData.confirmedByReceiver,
+          createdAt: newExpenseData.createdAt,
+          description: newExpenseData.description,
+          createdWith: [newExpenseData.createdWith[0]._id],
+        };
+
+        // Update local state
+        setDummy((prev) => [newObject, ...prev]);
+
+        // Emit the new expense to the socket
+        socket.emit('new-expense', newExpenseData);
+
+        // Create notification (should be awaited here)
+        const notification = await axios.post(`${notificationRoute}/create-notification/${userId}`, {
+          amount: newExpense.amount,
+          createdWith: newObject.createdWith,
+          description: newExpense.description,
+          type: "expense",
+       }, { withCredentials: true });
+        if (notification) {
+           console.log(notification)
+        }
       }
+
+      // Reset input fields
       setAmount('');
       setDescription('');
     } catch (error) {
@@ -144,6 +163,7 @@ const ChatSection = () => {
     } finally {
       setSendLoading(false);
     }
+
   };
 
   useEffect(() => {

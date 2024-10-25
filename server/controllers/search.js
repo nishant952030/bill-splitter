@@ -1,5 +1,6 @@
 const Request = require("../models/request");
 const UserModel = require("../models/user");
+
 const searchUser = async (req, res) => {
     try {
         const username = req.query.username;
@@ -93,6 +94,7 @@ const addUser = async (req, res) => {
         await request.save();
         user.requests.push(request._id);
         await user.save();
+        
         return res.status(200).json({
             message: "Request sent successfully",
             data: user,

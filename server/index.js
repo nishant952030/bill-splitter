@@ -14,6 +14,7 @@ const router = require("./routes/route");
 const searchRouter = require("./routes/searchroute");
 const expenseRouter = require("./routes/expenseRoute");
 const groupRouter = require("./routes/group");
+const notificationRouter = require("./routes/noificationRoutes");
 const { initializeSocket } = require('./socketConnection');
 
 // Initialize app and set port
@@ -66,6 +67,7 @@ app.use('/user', router);
 app.use('/search', searchRouter);
 app.use('/expense', expenseRouter);
 app.use('/group', groupRouter);
+app.use('/notification', notificationRouter); 
 
 httpServer.listen(port, () => {
     console.log(`Server is running at port ${port}`);

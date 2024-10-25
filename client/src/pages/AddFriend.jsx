@@ -3,13 +3,14 @@ import { Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ClipLoader from "react-spinners/ClipLoader";
 import { searchRoute } from '../components/constant';
-
+const {useSocket} = require('../../src/pages/shared/useSocket');
 const AddFriend = ({isSmall}) => {
     const [data, setData] = useState(null);
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [response, setResponse] = useState(null);
+    const socket = useSocket();
 
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(search), 500);
@@ -43,21 +44,27 @@ const AddFriend = ({isSmall}) => {
     }, [debouncedSearch]);
 
     const [render, setRender] = useState(false);
-    const handleAddFriend = async (id) => {
-        // Optimistic update: immediately set the status to 'pending'
-        const previousStatus = response.status;
-        setResponse({ ...response, status: 'pending' });
 
+    const handleAddFriend = async (id) => {
+
+        const previousStatus = response.status;
+
+        setResponse({ ...response, status: 'pending' });
         try {
             const response = await axios.get(`${searchRoute}/add-user/${id}`, { withCredentials: true });
+            if (response.data.success) {
+                socket.emit('send-notification', {
+                    senderId: response.data.data.senderId,
+                    receiverId: response.data.data.receiverId,
+                    message: `${response.data.data.senderId} has sent you a friend request`,
+                    type: 'friendRequest',
+                });
+                console.log(response);
+            }
             console.log(response);
-
-            // If successful, maintain the 'pending' status
             setRender(!render);
         } catch (error) {
-            console.log(error);
-
-            // Revert back to the previous status if the request fails
+            console.log(error)
             setResponse({ ...response, status: previousStatus });
         }
     };

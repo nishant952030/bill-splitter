@@ -13,7 +13,6 @@ const RequestsTable = ({ requests }) => {
             console.error(error);
         }
     }
-
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full bg-white shadow-md rounded-lg">

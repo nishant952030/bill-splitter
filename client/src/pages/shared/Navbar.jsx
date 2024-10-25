@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Bell, Menu, X } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
-import { userRoute } from '../../components/constant';
+import { notificationRoute, userRoute } from '../../components/constant';
 import { setFriends, setUser } from '../../redux';
 import GroupModal from '../GroupCreateDialog.jsx';
+import Notification from './Notification.jsx';
+import { useSocket } from './useSocket.jsx';
+
 
 const Navbar = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -16,6 +19,7 @@ const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch()
+    const socket = useSocket();
     const handleLogout = async () => {
         setIsProfileOpen(false);
         try {
@@ -52,7 +56,42 @@ const Navbar = () => {
     const toggleProfileDropdown = () => {
         setIsProfileOpen(!isProfileOpen);
     };
-
+    // for notifications
+    const [notificationsOpen, setNotificationsOpen] = useState(false);
+    const handlenotificationopne = () => {
+        setNotificationsOpen(!notificationsOpen);
+        showCountfun();
+    }
+    const showCountfun = () => {
+        setShowCount(false);
+    }
+    const [showCount, setShowCount] = useState(false);
+    const [count, setCount] = useState(0);
+    
+    useEffect(() => {
+        const getNotificationCount=async()=>{
+            try {
+                const response = await axios.get(`${notificationRoute}/get-notifications`, { withCredentials: true });
+                if (response.data.success) {
+                    setCount(response.data.notifications.length);
+                    setShowCount(true);
+                }
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+                return 0;
+            }
+        }
+        getNotificationCount();
+    }, [])
+    useEffect(() => {
+        if (!socket) return;
+        socket.on('new-notification', (notification) => {
+            console.log("its working")
+            setCount((prevCount) => prevCount + 1);
+            setShowCount(true);
+        });
+    },[])
+   
     return (
         <nav className="bg-gray-800 fixed top-0 left-0 w-full z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -60,21 +99,27 @@ const Navbar = () => {
                     <Link to="/" className="text-white text-lg font-semibold">
                         CashFlow
                     </Link>
-
-                    {/* Mobile menu button */}
-                    <button
-                        onClick={toggleMenu}
-                        className="md:hidden text-white"
+                    <div
+                        className='relative ml-auto px-4 py-2 bg-gray-700 rounded-lg mr-3 text-white hover:bg-gray-950 cursor-pointer transition-colors duration-300'
+                        onClick={handlenotificationopne}
                     >
-                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                    </button>
+                        <Bell size={24} />
 
-                    {/* Desktop menu */}
+                        {/* Notification count badge */}
+                        {(showCount && count > 0) && <div className='absolute top-1 right-1 w-4 h-4 bg-red-800 text-xs text-white flex items-center justify-center rounded-full'>
+                            {count}
+                        </div>}
+
+                        {notificationsOpen && <Notification notificationsOpen={notificationsOpen} />}
+                    </div>
+
+                    <button onClick={toggleMenu} className="md:hidden text-white" >{isMenuOpen ? <X size={24} /> : <Menu size={24} />}</button>
+
                     <div className="hidden md:flex space-x-6 items-center">
                         {shouldShowHomeButton && (
                             <button
                                 onClick={handleHomeClick}
-                                className="text-white px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-800 transition-colors duration-300"
+                                className="text-white px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-950 transition-colors duration-300"
                             >
                                 Home
                             </button>
@@ -92,7 +137,7 @@ const Navbar = () => {
                                         Create Group
                                     </button>
                                 )}
-                                {/* Profile button with avatar */}
+                                
                                 <div className="relative">
                                     <button onClick={toggleProfileDropdown} className="focus:outline-none">
                                         <img

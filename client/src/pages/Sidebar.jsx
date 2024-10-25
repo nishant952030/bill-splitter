@@ -17,7 +17,7 @@ const Sidebar = () => {
     const handleGroupClick = (id) => {
         navigate(`/home/group/${id}`);
     };
-
+     
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [activeTab, setActiveTab] = useState('contacts'); 
