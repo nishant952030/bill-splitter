@@ -13,11 +13,19 @@ const Notification = () => {
     const socket = useSocket();
     useEffect(() => {
         if (socket) {
-            socket.on('new-notification', (notification) => {
-                setNotifications((prevNotifications) => [notification, ...prevNotifications]);
-            });
+            const handleNewNotification = (notification) => {
+                console.log('Received new notification:', notification);
+                setNotifications((prevNotifications) => {
+                    return [notification, ...prevNotifications];
+                });
+            };
+            socket.on('new-notification', handleNewNotification);
+            return () => {
+                socket.off('new-notification', handleNewNotification);
+            };
         }
-     }, [socket]);
+    }, [socket]);
+
     
     useEffect(() => {
         const fetchNotifications = async () => {
@@ -56,7 +64,7 @@ const Notification = () => {
     // Function to handle marking all notifications as seen
     const markAllSeen = async () => {
         try {
-            const res = await axios.post(`${notificationRoute}/mark-all-seen`, { withCredentials: true });
+            const res = await axios.get(`${notificationRoute}/mark-all-seen`, { withCredentials: true });
             if (res.data.success) {
                 setNotifications([]);
             }
@@ -95,7 +103,7 @@ const Notification = () => {
                             $
                         </div>
                         <div className="flex flex-col">
-                            <span className="font-medium text-gray-900">{notification.createdBy.name}</span>
+                            <span className="font-medium text-gray-900">{notification.createdBy.name||notification.name}</span>
                             <span className="text-sm text-gray-600">has split a bill of ₹{notification.amount}</span>
                         </div>
                     </div>

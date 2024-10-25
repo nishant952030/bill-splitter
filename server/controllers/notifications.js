@@ -4,7 +4,7 @@ const { getIo, connectedSockets } = require("../socketConnection");
 const createNotificationsForIndividual = async (req, res) => {
     try {
         const { userId } = req;
-        const { amount, description, type } = req.body;  // Added 'type' to support multiple notification types
+        const { amount, description, type,name } = req.body;  // Added 'type' to support multiple notification types
         const { splitWith } = req.params;
 
         const notification = await Notification.create({
@@ -12,7 +12,8 @@ const createNotificationsForIndividual = async (req, res) => {
             amount,
             createdWith: [splitWith],
             message: description,
-            type  
+            type,
+        
         });
 
         if (!notification) {
@@ -28,7 +29,11 @@ const createNotificationsForIndividual = async (req, res) => {
 
          
         if (receiverSocketId) {
-            getIo().to(receiverSocketId).emit('new-notification', notification);
+            const notificationData = {
+                ...notification.toObject(), 
+                name  
+            };
+            getIo().to(receiverSocketId).emit('new-notification', notificationData);
         }
         
         return res.status(200).json({
@@ -99,5 +104,18 @@ const updateNotification = async (req, res) => {
         });
     }
 };
-
-module.exports = { createNotificationsForIndividual, getNotifications, updateNotification };
+const markAllseen = async (req, res)=> {
+    try {
+        const userId = req.userId;
+        const notifications = await Notification.updateMany({
+            createdWith: { $in: [req.userId] }, isRead: false}, { $set: { isRead: true } }
+        );
+        return res.status(200).json({
+            message: "Notifications updated successfully.",
+            success: true
+        });
+    } catch (error) {
+        console.log(error);
+    }
+};
+module.exports = { createNotificationsForIndividual, getNotifications, updateNotification ,markAllseen};

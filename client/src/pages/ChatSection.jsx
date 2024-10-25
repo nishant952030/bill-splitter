@@ -1,12 +1,15 @@
 import axios from 'axios';
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { Send } from 'lucide-react';
+import { Send, Store } from 'lucide-react';
 import { ClipLoader } from 'react-spinners';
 import ChatMessage from './Chat';
 import { expenseRoute, notificationRoute, userRoute } from '../components/constant';
 import { useSpring, animated } from '@react-spring/web';
 import { useSocket } from './shared/useSocket';
+import { useSelector } from 'react-redux';
+
+
 
 const AnimatedNumber = ({ value }) => {
   const { number } = useSpring({
@@ -29,6 +32,7 @@ const ChatSection = () => {
   const [sendLoading, setSendLoading] = useState(false);
   const [error, setError] = useState('');
   const chatContainerRef = useRef(null);
+  const {user}=useSelector(store => store.user);
   const socket = useSocket();
   const [take, setTake] = useState(0);
   const [give, setGive] = useState(0);
@@ -148,6 +152,7 @@ const ChatSection = () => {
           createdWith: newObject.createdWith,
           description: newExpense.description,
           type: "expense",
+          name:user.name
        }, { withCredentials: true });
         if (notification) {
            console.log(notification)
