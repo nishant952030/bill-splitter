@@ -6,7 +6,7 @@ const connectedSockets = new Map();
 function initializeSocket(httpServer) {
     io = socketIo(httpServer, {
         cors: {
-            origin: ["http://localhost:3000","https://bill-splitter-zeta.vercel.app"],
+            origin: "https://bill-splitter-zeta.vercel.app",
             methods: ['GET', 'POST'],
             allowedHeaders: ['Content-Type', 'Authorization'],
             credentials: true,
