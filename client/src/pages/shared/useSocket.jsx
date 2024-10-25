@@ -7,7 +7,7 @@ export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
-        const socketIo = io("http://localhost:8000",{withCredentials:true});
+        const socketIo = io(["http://localhost:8000","https://bill-server-dutu.onrender.com"],{withCredentials:true});
         setSocket(socketIo);
 
         socketIo.on("connect", () => {
