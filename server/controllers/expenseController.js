@@ -1,9 +1,10 @@
 const Expense = require("../models/expense");
 const GroupExpense = require("../models/GroupExpense");
 const Group = require("../models/GroupSchema");
+const Notification = require("../models/notification.js");
 const UserModel = require("../models/user");
 const { getIo } = require('../socketConnection.js');
-
+const axios = require('axios');
 const {connectedSockets} = require("../socketConnection.js");
 const addExpense = async (req, res) => {
     try {
@@ -68,13 +69,26 @@ const getAllExpenses = async (req, res) => {
     try {
         const userId = req.userId;
         const splitWith = req.params.splitwith;
+
+        // Get page and limit from query parameters, with default values if not provided
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        // Calculate the number of items to skip for pagination
+        const skip = (page - 1) * limit;
+
+        // Find expenses with pagination
         const expenses = await Expense.find({
             $or: [
                 { createdBy: userId, createdWith: { $in: [splitWith] } },
                 { createdBy: splitWith, createdWith: { $in: [userId] } }
             ]
         })
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 }) // Sort in descending order by date
+            .skip(skip)
+            .limit(limit);
+
+        // Send paginated data to client
         res.status(200).json({ success: true, data: expenses });
 
     } catch (error) {
@@ -82,13 +96,25 @@ const getAllExpenses = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
 const updateStatus = async (req, res) => {
     try {
-        const userId = req.useId;
+        const userId = req.userId;
         const expenseId = req.params.expenseId;
         const expense = await Expense.findOne({ _id: expenseId });
         expense.status = 'settled';
         await expense.save();
+        console.log(expense)
+        const notification = await Notification.create({
+            createdBy: userId,
+            createdWith:[expense.createdBy],
+            message: `paid you ${expense.splitAmount}`,
+            type: "paidExpense",
+        }) 
+        const io = getIo();
+        const receiverSocketId = connectedSockets.get(expense.createdBy);
+        io.to(receiverSocketId).emit('new-notification', notification);
+        console.log(notification)
         return res.status(200).json({
             message: "setlled amount",
             success: true,
@@ -307,6 +333,85 @@ const getMygroupExpenses = async (req, res) => {
         console.log(error);
     }
 }
+const getGiveTake = async (req, res) => {
+    try {
+        const { recieverId } = req.params;
+        const userId = req.userId;
+
+        // Find expenses where the current user is owed money (they 'take')
+        const takeExpenses = await Expense.find({
+            createdWith: recieverId, // assuming createdWith is the receiver field
+            createdBy: userId,
+            $or: [
+                { status: "pending" },
+                { confirmedByReciever: false }
+            ]
+        });
+
+        // Find expenses where the current user owes money (they 'give')
+        const giveExpenses = await Expense.find({
+            createdWith: userId,
+            createdBy: recieverId,
+            $or: [
+                { status: "pending" },
+                { confirmedByReciever: false }
+            ]
+        });
+
+         console.log(takeExpenses)
+        // Calculate cumulative splitAmount for both 'take' and 'give'
+        const totalTake = takeExpenses.reduce((sum, expense) => sum + expense.splitAmount, 0);
+        const totalGive = giveExpenses.reduce((sum, expense) => sum + expense.splitAmount, 0);
+
+        res.status(200).json({
+            success: true,
+            totalTake,
+            totalGive
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching cumulative expenses.",
+            error: error.message
+        });
+    }
+};
+require('dotenv').config();
+const getAllExpensesforMakingChart = async (req, res) => {
+    try {
+        // Validate userId
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is missing' });
+        }
+
+        // Fetch expenses using find
+        const expenses = await Expense.find(
+            {
+                $or: [
+                    { createdBy: userId },
+                    { createdWith: { $in: [userId] } }
+                ]
+            },
+            'splitAmount createdAt description' 
+        ).sort({ createdAt: -1 });
+        const classifiedData = await axios.post(`${process.env.CLASSIFY}/classify`, { expenses });
+        
+        if (expenses.length === 0) {
+            return res.status(200).json({ message: 'No expenses found for this user' });
+        }
+
+        return res.status(200).json({
+            expenses, success: true, message: 'Expenses fetched successfully', classifiedData: classifiedData.data
+         });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Something went wrong while fetching expenses' });
+    }
+};
+
 
 module.exports = {
     addExpense,
@@ -318,5 +423,7 @@ module.exports = {
     getGroupDetails,
     getMyGroups,
     createGroupExpense,
-    getMygroupExpenses
+    getMygroupExpenses,
+    getGiveTake,
+    getAllExpensesforMakingChart
 }

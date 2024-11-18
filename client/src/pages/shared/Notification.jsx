@@ -1,24 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { notificationRoute } from '../../components/constant';
+import { notificationRoute, userRoute } from '../../components/constant';
 import { useNavigate } from 'react-router-dom';
 import { useSocket } from './useSocket';
+import { Fullscreen } from 'lucide-react';
 
 const Notification = () => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    
     const socket = useSocket();
+
+    // Fetch the createdBy name for notifications
+    const getCreatedByName = async (createdBy) => {
+        try {
+            const res = await axios.get(`${userRoute}/get-details/${createdBy}`, { withCredentials: true });
+            return res.data.data.name;
+        } catch (error) {
+            console.error("Error fetching createdBy name:", error);
+            return "Unknown";
+        }
+    };
+
+    // Socket listener for new notifications
     useEffect(() => {
         if (socket) {
-            const handleNewNotification = (notification) => {
-                console.log('Received new notification:', notification);
-                setNotifications((prevNotifications) => {
-                    return [notification, ...prevNotifications];
-                });
+            const handleNewNotification = async (notification) => {
+                console.log("Received new notification:", notification);
+                if (notification.type === 'paidExpense' && notification.createdBy) {
+                    notification.createdByName =notification.createdBy.name;
+                }
+                setNotifications((prevNotifications) => [notification, ...prevNotifications]);
             };
+
             socket.on('new-notification', handleNewNotification);
             return () => {
                 socket.off('new-notification', handleNewNotification);
@@ -26,13 +41,21 @@ const Notification = () => {
         }
     }, [socket]);
 
-    
+    // Fetch notifications on mount
     useEffect(() => {
         const fetchNotifications = async () => {
             setLoading(true);
             try {
                 const res = await axios.get(`${notificationRoute}/get-notifications`, { withCredentials: true });
-                setNotifications(res.data.notifications);
+                const notificationsWithNames = await Promise.all(
+                    res.data.notifications.map(async (notification) => {
+                        if (notification.type === 'paidExpense' && notification.createdBy) {
+                            notification.createdByName = notification.createdBy.name;
+                        }
+                        return notification;
+                    })
+                );
+                setNotifications(notificationsWithNames);
             } catch (error) {
                 console.error('Error fetching notifications:', error);
             }
@@ -40,55 +63,64 @@ const Notification = () => {
         };
         fetchNotifications();
     }, []);
-     
 
-
-    // Function to handle viewing a specific notification
-    const viewNotification = async (notification) => {
-        try {
-            const res = await axios.get(`${notificationRoute}/update-notification/${notification._id}`, { withCredentials: true });
-            if (res.data.success) {
-                setNotifications((prev) => prev.filter((ele) => ele._id !== notification._id));
-                if (notification.type === 'expense') {
-                    navigate(`/home/user/${notification.createdBy._id}`);
-                } else if (notification.type === 'friendRequest') {
-                    navigate(`/friends`);
-                }
-                // Add more navigation actions for different types of notifications
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    };
-
-    // Function to handle marking all notifications as seen
+    // Mark all notifications as seen
     const markAllSeen = async () => {
         try {
-            const res = await axios.get(`${notificationRoute}/mark-all-seen`, { withCredentials: true });
-            if (res.data.success) {
-                setNotifications([]);
-            }
+            await axios.post(`${notificationRoute}/mark-all-seen`, {}, { withCredentials: true });
+            setNotifications((prevNotifications) =>
+                prevNotifications.map((notification) => ({
+                    ...notification,
+                    seen: true,
+                }))
+            );
         } catch (error) {
-            console.error('Error marking all notifications as seen:', error);
+            console.error("Error marking all notifications as seen:", error);
         }
     };
 
-    // Function to render different notification types
+    // Function to handle viewing a friend request
+    const viewRequest = (notification) => {
+        navigate(`/friend-requests/${notification._id}`);
+    };
+
+    // Function to handle viewing an expense notification
+    const viewNotification = (notification) => {
+        navigate(`/expenses/${notification.expenseId}`);
+    };
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    const [fullScreen, setIsSidebarVisible] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setScreenWidth(window.innerWidth);
+            if (window.innerWidth < 470) {
+                setIsSidebarVisible(true);
+            } else {
+                setIsSidebarVisible(false);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+    // Render different types of notifications
     const renderNotification = (notification) => {
         switch (notification.type) {
             case 'friendRequest':
                 return (
                     <div
                         key={notification._id}
-                        onClick={() => viewNotification(notification)}
-                        className="relative flex items-center bg-blue-100 p-3 rounded-lg shadow-md hover:bg-blue-200 transition-all duration-300 ease-in-out transform hover:scale-105"
-                    >
+                        onClick={() => viewRequest(notification)}
+                        className="relative flex items-center bg-blue-100 p-3 rounded-lg shadow-md hover:bg-blue-200 transition-all duration-300 ease-in-out transform hover:scale-105">
                         <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-200 text-blue-700 font-semibold mr-3">
                             FR
                         </div>
                         <div className="flex flex-col">
-                            <span className="font-medium text-gray-900">{notification.createdBy.name}</span>
-                            <span className="text-sm text-gray-600">sent you a friend request</span>
+                            <span className="text-sm text-gray-600">
+                                {notification.message}
+                            </span>
                         </div>
                     </div>
                 );
@@ -100,30 +132,29 @@ const Notification = () => {
                         className="relative flex items-center bg-green-100 p-3 rounded-lg shadow-md hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105"
                     >
                         <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-200 text-green-700 font-semibold mr-3">
-                            $
+                            ₹
                         </div>
                         <div className="flex flex-col">
-                            <span className="font-medium text-gray-900">{notification.createdBy.name||notification.name}</span>
+                            <span className="font-medium text-gray-900">{notification.createdBy.name || notification.name}</span>
                             <span className="text-sm text-gray-600">has split a bill of ₹{notification.amount}</span>
                         </div>
                     </div>
                 );
-            case 'systemAlert':
+            case 'paidExpense':
                 return (
                     <div
                         key={notification._id}
-                        className="relative flex items-center bg-red-100 p-3 rounded-lg shadow-md hover:bg-red-200 transition-all duration-300 ease-in-out transform hover:scale-105"
+                        className="relative flex items-center bg-green-100 p-3 rounded-lg shadow-md hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105"
                     >
-                        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-red-200 text-red-700 font-semibold mr-3">
-                            !
+                        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-200 text-green-700 font-semibold mr-3">
+                            ₹
                         </div>
                         <div className="flex flex-col">
-                            <span className="font-medium text-gray-900">System Alert</span>
+                            <span className="font-medium text-gray-900">{notification.createdByName || 'Unknown'}</span>
                             <span className="text-sm text-gray-600">{notification.message}</span>
                         </div>
                     </div>
                 );
-            // Add more notification types here
             default:
                 return (
                     <div
@@ -142,24 +173,24 @@ const Notification = () => {
     };
 
     return (
-        <div className={`h-[60vh] w-96 top-20 right-0 flex flex-col gap-4 p-4 bg-gray-800 absolute transition-transform duration-500 ease-in-out overflow-y-auto shadow-lg rounded-md`}>
-            <div className='flex justify-between'>
-                <div className='text-white'>
+        <div className={`h-[60vh] ${fullScreen ? "w-[100vw] top-20 -right-12" :"w-96 top-20 right-0"}  flex flex-col gap-4 pb-4 bg-gray-800 absolute transition-transform duration-500 ease-in-out overflow-y-auto shadow-lg rounded-md`}>
+            <div className="flex justify-between px-4 pt-4">
+                <div className="text-white">
                     {notifications.length} unseen
                 </div>
-                <div className='px-3 py-2 bg-gray-700 text-white cursor-pointer' onClick={markAllSeen}>
+                <div className="px-3 py-2 bg-gray-700 text-white cursor-pointer" onClick={markAllSeen}>
                     Mark all seen
                 </div>
             </div>
-
-            {/* Notification list */}
-            {loading ? (
+            <div className='overflow-y-scroll flex flex-col gap-2 p-4'>             {loading ? (
                 <div className="text-white text-center">Loading...</div>
             ) : notifications.length > 0 ? (
                 notifications.map((notification) => renderNotification(notification))
             ) : (
                 <div className="text-white text-center">No notifications</div>
             )}
+            </div>
+
         </div>
     );
 };

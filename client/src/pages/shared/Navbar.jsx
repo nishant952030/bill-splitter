@@ -151,7 +151,10 @@ const Navbar = () => {
                                     {isProfileOpen && (
                                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
                                             <button
-                                                onClick={() => navigate('/profile')}
+                                                onClick={() => {
+                                                    toggleProfileDropdown()
+                                                    navigate('/profile')
+                                                }}
                                                 className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
                                             >
                                                 Profile
@@ -223,7 +226,10 @@ const Navbar = () => {
                                     {isProfileOpen && (
                                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl">
                                             <button
-                                                onClick={() => navigate('/profile')}
+                                                onClick={() => {
+                                                    toggleProfileDropdown();
+                                                    navigate('/profile')
+                                                }}
                                                 className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-t-lg transition-all duration-300"
                                             >
                                                 Profile

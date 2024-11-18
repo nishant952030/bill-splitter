@@ -4,16 +4,14 @@ const { getIo, connectedSockets } = require("../socketConnection");
 const createNotificationsForIndividual = async (req, res) => {
     try {
         const { userId } = req;
-        const { amount, description, type,name } = req.body;  // Added 'type' to support multiple notification types
+        const { amount, description, type,name } = req.body;
         const { splitWith } = req.params;
-
         const notification = await Notification.create({
             createdBy: userId,
             amount,
             createdWith: [splitWith],
             message: description,
             type,
-        
         });
 
         if (!notification) {
@@ -26,8 +24,7 @@ const createNotificationsForIndividual = async (req, res) => {
         console.log("Connected Sockets Map:", connectedSockets);
         console.log("splitWith Key:", splitWith);
         console.log("Receiver Socket ID:", receiverSocketId);
-
-         
+        
         if (receiverSocketId) {
             const notificationData = {
                 ...notification.toObject(), 

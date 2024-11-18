@@ -4,6 +4,7 @@ import axios from 'axios';
 import { expenseRoute } from '../components/constant';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { useSocket } from './shared/useSocket';
+import { useSelector } from 'react-redux';
 
 const ChatMessage = ({ message, splitwith }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -11,13 +12,12 @@ const ChatMessage = ({ message, splitwith }) => {
     const [settled, setSettled] = useState(message.status === 'settled');
 
     const isOutgoing = message.createdWith[0] === splitwith;
-
+    const {user}=useSelector(store => store.user);
     const statusIcon = {
         pending: <Clock className="w-5 h-5" />,
         approved: <Check className="w-5 h-5 text-green-500" />,
         rejected: <X className="w-5 h-5 text-red-500" />
     };
-
     const socket = useSocket();
     useEffect(() => {
         if (!socket) return; 
@@ -49,6 +49,7 @@ const ChatMessage = ({ message, splitwith }) => {
                 socket.emit("update-settled", message, (message) => {
                     setSettled(true);
                 });
+                
             }
         } catch (error) {
             console.log(error);
@@ -113,7 +114,7 @@ const ChatMessage = ({ message, splitwith }) => {
                                         {isLoading ? <ClipLoader size={20} color="#fff" /> : 'Confirm Payment'}
                                     </button>
                                 ) : (
-                                    <div className='text-red-500'>Not Confirmed by Receiver</div>
+                                            <div className='text-red-500'>Wating for Confirmation</div>
                                 )
                             )
                         ) : (

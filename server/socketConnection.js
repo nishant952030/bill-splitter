@@ -2,11 +2,11 @@ const socketIo = require('socket.io');
 
 let io; // This will store the Socket.IO instance
 const connectedSockets = new Map();
-
+require('dotenv').config();
 function initializeSocket(httpServer) {
     io = socketIo(httpServer, {
         cors: {
-            origin: "bill-splitter-zeta.vercel.app",
+            origin: process.env.FRONTEND_URL,
             methods: ['GET', 'POST'],
             allowedHeaders: ['Content-Type', 'Authorization'],
             credentials: true,
@@ -27,12 +27,9 @@ function initializeSocket(httpServer) {
 
             if (receiverSocketId) {
                 io.to(receiverSocketId).emit('new-expense', newExpense);
-
                 if (typeof ackCallback === 'function') {
                     ackCallback(newExpense);
                 }
-            } else {
-                console.log(`No socket connected for user with ID: ${newExpense.createdWith[0]._id}`);
             }
         });
         
@@ -57,6 +54,12 @@ function initializeSocket(httpServer) {
             io.to(receiverSocketId2).emit("update-count", message);
 
         }) 
+        socket.on("friend-notification", (notification) => {
+            const receiverSocketId = connectedSockets.get(notification.receiverId) 
+            if (receiverSocketId) 
+                io.to(receiverSocketId).emit("new-notification",notification)
+            }
+        )
 
         socket.on('disconnect', () => {
             console.log(`User disconnected: ${socket.id}`);

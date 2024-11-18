@@ -1,0 +1,47 @@
+# Python-related
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+*.db
+*.sqlite3
+
+# Virtual Environment
+venv/
+.env/
+.venv/
+
+# IDE-related files (Optional)
+.vscode/
+.idea/
+
+# Environment variables file
+.env
+
+# Flask specific
+instance/
+*.log
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+
+# PyInstaller
+*.spec
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# macOS specific files
+.DS_Store
+
+# Windows specific files
+Thumbs.db
+
+# Linux-specific files
+*~
+
+# Test coverage reports
+coverage/
+*.cover

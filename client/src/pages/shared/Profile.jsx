@@ -2,15 +2,35 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { searchRoute } from '../../components/constant';
+import ExpenseChar from '../ExpenseChar';
 
 const RequestsTable = ({ requests }) => {
-   console.log(searchRoute)
+    const [acceptloading, setacceptLoading] = useState(false);
+    const [rejecttloading, setrejecttLoading] = useState(false);
+    const [allRequests, setAllRequests] = useState(requests);
+    console.log(allRequests);
     const handleAction = async (request, action) => {
         try {
+            if (action === 'accept') {
+                setacceptLoading(true);
+            } else if (action === 'reject') {
+                setrejecttLoading(true);
+            }
+        
             const response = await axios.get(`${searchRoute}/action/${request.senderId._id}/${request._id}/${action}`, { withCredentials: true });
+            if (response.data.success) {
+                
+            }
             console.log(response);
         } catch (error) {
             console.error(error);
+        }
+        finally {
+           if (action === 'accept') {
+                setacceptLoading(false);
+            } else if (action === 'reject') {
+                setrejecttLoading(false);
+            }
         }
     }
     return (
@@ -26,31 +46,37 @@ const RequestsTable = ({ requests }) => {
                     </tr>
                 </thead>
                 <tbody className="text-gray-600 text-sm font-light">
-                    {requests.map((request) => (
+                    {allRequests.map((request) => (
                         <tr key={request._id} className="border-b border-gray-200 hover:bg-gray-100 transition duration-300">
-                            <td className="py-3 px-6 text-left whitespace-nowrap">{request.senderId.name}</td>
-                            <td className="py-3 px-6 text-left">{request.senderId.username}</td>
-                            <td className="py-3 px-6 text-left">{new Date(request.createdAt).toLocaleDateString()}</td>
-                            <td className="py-3 px-6 text-left">{request.status}</td>
+                            <td className="py-3 px-6 text-left whitespace-nowrap">{request?.senderId?.name}</td>
+                            <td className="py-3 px-6 text-left">{request?.senderId?.username}</td>
+                            <td className="py-3 px-6 text-left">{new Date(request?.createdAt).toLocaleDateString()}</td>
+                            <td className="py-3 px-6 text-left">{request?.status}</td>
                             <td className="py-3 px-6">
                                 <div className="flex gap-4">
-                                    <button
-                                        className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 transition duration-200"
-                                        onClick={() => {
-                                            console.log(`Clicked accept for ${request._id}`);
-                                            handleAction(request, 'accept');
-                                        }}
-                                         
-                                    >
-                                        Accept
-                                    </button>
-                                    <button
-                                        className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50 transition duration-200"
-                                        onClick={()=> handleAction(request, 'reject')}
-                                        
-                                    >
-                                        Reject
-                                    </button>
+                                            <button
+                                                className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 transition duration-200"
+                                                onClick={() => {
+                                                    console.log(`Clicked accept for ${request._id}`);
+                                                    handleAction(request, 'accept');
+                                                }}
+                                                disabled={acceptloading}
+                                            >
+                                                {acceptloading?'wait...':'Accept'}
+                                            </button>
+                                            <button
+                                                className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50 transition duration-200"
+                                                onClick={() => {
+                                                    console.log(`Clicked reject for ${request._id}`);
+                                                    handleAction(request, 'reject');
+                                                }}
+                                                disabled={rejecttloading}
+                                            >
+                                                {rejecttloading?'wait...':'Reject'}
+                                            </button>
+                                        </div>
+                                    
+                                      <div>
                                 </div>
                             </td>
                         </tr>
@@ -58,49 +84,6 @@ const RequestsTable = ({ requests }) => {
                 </tbody>
             </table>
         </div>
-     /*    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-  {requests.map((request) => (
-    <div
-      key={request._id}
-      className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300"
-    >
-      <div className="flex items-center mb-4">
-        <img
-          src={request.senderId.avatar || '/api/placeholder/50/50'}
-          alt="User Avatar"
-          className="w-12 h-12 rounded-full border-2 border-gray-300 shadow-sm mr-4"
-        />
-        <div>
-          <h3 className="text-xl font-semibold">{request.senderId.name}</h3>
-          <p className="text-gray-500">@{request.senderId.username}</p>
-        </div>
-      </div>
-      <p className="text-gray-600 text-sm">
-        Request Date: <strong>{new Date(request.createdAt).toLocaleDateString()}</strong>
-      </p>
-      <p className="text-gray-600 text-sm mb-4">
-        Status: <strong>{request.status}</strong>
-      </p>
-      <div className="flex justify-between">
-        <button
-          className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 transition duration-200"
-          onClick={() => handleAction(request, 'accept')}
-          disabled={request.status !== 'Pending'}
-        >
-          Accept
-        </button>
-        <button
-          className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50 transition duration-200"
-          onClick={() => handleAction(request, 'reject')}
-          disabled={request.status !== 'Pending'}
-        >
-          Reject
-        </button>
-      </div>
-    </div>
-  ))}
-</div> */
-
     );
 };
 
@@ -161,8 +144,8 @@ const Profile = () => {
                     )}
                 </div>
             </div>
+            <ExpenseChar/>
         </div>
     );
 };
-
-export default Profile;
+export default Profile; 

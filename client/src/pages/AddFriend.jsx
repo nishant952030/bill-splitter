@@ -3,6 +3,7 @@ import { Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ClipLoader from "react-spinners/ClipLoader";
 import { searchRoute } from '../components/constant';
+import { useSelector } from 'react-redux';
 const {useSocket} = require('../../src/pages/shared/useSocket');
 const AddFriend = ({isSmall}) => {
     const [data, setData] = useState(null);
@@ -11,7 +12,7 @@ const AddFriend = ({isSmall}) => {
     const [isLoading, setIsLoading] = useState(false);
     const [response, setResponse] = useState(null);
     const socket = useSocket();
-
+   const {user}=useSelector(store=>store.user)
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(search), 500);
         return () => clearTimeout(timer);
@@ -53,10 +54,9 @@ const AddFriend = ({isSmall}) => {
         try {
             const response = await axios.get(`${searchRoute}/add-user/${id}`, { withCredentials: true });
             if (response.data.success) {
-                socket.emit('send-notification', {
-                    senderId: response.data.data.senderId,
+                socket.emit('friend-notification', {
                     receiverId: response.data.data.receiverId,
-                    message: `${response.data.data.senderId} has sent you a friend request`,
+                    message: `${user.name} has sent you a friend request`,
                     type: 'friendRequest',
                 });
                 console.log(response);
@@ -72,7 +72,7 @@ const AddFriend = ({isSmall}) => {
     return (
         <div className={`mb-4 ${isSmall?"mt-10":"mt-14"}`}>
             {/* Search Bar */}
-            <div className="flex sm:flex-row gap-3 w-full md:max-w-3xl justify-start">
+            <div className="flex sm:flex-row gap-3 max-w-5xl md:max-w-3xl justify-start">
                 <input
                     type="text"
                     value={search}
@@ -99,7 +99,7 @@ const AddFriend = ({isSmall}) => {
             ) : (
                 debouncedSearch.length >= 3 && (
                     data && data.username ? (
-                        <div className='bg-gray-100 rounded-md mt-4 p-4 flex flex-col md:flex-row justify-between items-center'>
+                        <div className='bg-gray-100 rounded-md mt-4 p-4 flex flex-col md:flex-row justify-between items-center max-w-3xl'>
                             <div className='text-gray-700'>
                                 <p>Name: <span className='ml-1 uppercase'>{data.name}</span></p>
                                 <p>Username: <span className='ml-1'>{data.username}</span></p>

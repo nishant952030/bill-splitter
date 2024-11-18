@@ -1,3 +1,4 @@
+const Notification = require("../models/notification");
 const Request = require("../models/request");
 const UserModel = require("../models/user");
 
@@ -79,32 +80,50 @@ const searchUser = async (req, res) => {
     }
 };
 
-
 const addUser = async (req, res) => {
     try {
         const userId = req.userId;
         const otherUserId = req.params.id;
-
+        
+        
         const user = await UserModel.findOne({ _id: otherUserId });
+        const { name } = await UserModel.findOne({ _id: userId }, 'name');
 
+        // Create a friend request
         const request = await Request.create({
             senderId: userId,
             recieverId: otherUserId
         });
         await request.save();
+
+        // Add request ID to the user's requests array
         user.requests.push(request._id);
         await user.save();
-        
+
+        // Create a notification for the friend request
+        const notification = await Notification.create({
+            createdBy: userId,
+            createdWith: [otherUserId],
+            type: 'friendRequest',
+            message: `${name} sent you a friend request`,
+            isRead: false
+        });
+        await notification.save();
+
         return res.status(200).json({
             message: "Request sent successfully",
             data: user,
             success: true
-        })
-    }
-    catch (error) {
+        });
+    } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            message: "An error occurred",
+            success: false
+        });
     }
-}
+};
+
 const findRequests = async (req, res) => {
     try {
         const userId = req.userId;
@@ -158,7 +177,7 @@ const actionRequest = async (req, res) => {
                 success: true,
             });
         }
-
+        
         if (action === 'reject') {
             request.status = 'rejected';
             await request.save();

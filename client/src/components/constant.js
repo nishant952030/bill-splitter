@@ -1,7 +1,11 @@
 
-const userRoute = 'https://bill-server-dutu.onrender.com/user'; const searchRoute = 'https://bill-server-dutu.onrender.com/search'; const expenseRoute = 'https://bill-server-dutu.onrender.com/expense'; const groupRoute = 'https://bill-server-dutu.onrender.com/group'; const notificationRoute = 'https://bill-server-dutu.onrender.com/notification'
+require('dotenv').config();
 
-// const userRoute = 'http://localhost:8000/user'; const expenseRoute = 'http://localhost:8000/expense'; const searchRoute = 'http://localhost:8000/search'; const groupRoute = 'http://localhost:8000/group'; const notificationRoute = 'http://localhost:8000/notification'
+const userRoute = `${process.env.BASE_URL}${process.env.USER_ROUTE}`;
+const expenseRoute = `${process.env.BASE_URL}${process.env.EXPENSE_ROUTE}`;
+const searchRoute = `${process.env.BASE_URL}${process.env.SEARCH_ROUTE}`;
+const groupRoute = `${process.env.BASE_URL}${process.env.GROUP_ROUTE}`;
+const notificationRoute = `${process.env.BASE_URL}${process.env.NOTIFICATION_ROUTE}`;
 
 module.exports = {
     userRoute,
@@ -9,5 +13,4 @@ module.exports = {
     searchRoute,
     groupRoute,
     notificationRoute,
-
 };

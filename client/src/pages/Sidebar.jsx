@@ -1,26 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom'; 
-import { ChevronRight, ChevronLeft } from 'lucide-react'; 
+import { useNavigate } from 'react-router-dom';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { groupRoute } from '../components/constant';
 import axios from 'axios';
 
 const Sidebar = () => {
     const contacts = useSelector((store) => store.user.contacts);
- 
-    const navigate = useNavigate(); 
-   
+
+    const navigate = useNavigate();
+
     const handleClick = (id) => {
-        navigate(`/home/user/${id}`); 
+        navigate(`/home/user/${id}`);
     };
 
     const handleGroupClick = (id) => {
         navigate(`/home/group/${id}`);
     };
-     
+
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-    const [activeTab, setActiveTab] = useState('contacts'); 
+    const [activeTab, setActiveTab] = useState('contacts');
 
     useEffect(() => {
         const handleResize = () => {
@@ -62,7 +62,7 @@ const Sidebar = () => {
 
 
     return (
-        <div>
+        <div className='h-[90vh]'>
             {screenWidth < 840 && (
                 <button
                     onClick={toggleSidebar}
@@ -72,27 +72,24 @@ const Sidebar = () => {
                 </button>
             )}
 
-            <div className={`${isSidebarVisible ? 'absolute left-0' : '-left-96'} ${screenWidth < 840 ? 'absolute' : 'relative'} transition-all duration-300 ease-in-out flex flex-col w-96 bg-gray-100 rounded-lg p-4 py-7 h-full z-20`}>
-
-                <h1 className="text-2xl font-bold mb-6 text-gray-800">Contacts & Groups</h1>
-
+            <div className={`${isSidebarVisible ? 'absolute left-0' : '-left-96'} ${screenWidth < 840 ? 'absolute' : 'relative'} transition-all duration-300 ease-in-out flex flex-col w-96 bg-gray-100 rounded-lg p-4 pt-7 h-full z-20`}>
                 <div className="flex justify-around mb-4">
                     <button
                         onClick={() => handleTabChange('contacts')}
-                        className={`p-2 rounded-lg ${activeTab === 'contacts' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} transition duration-300 ease-in-out`}
+                        className={`p-2 rounded-lg ${activeTab === 'contacts' ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-700'} transition duration-300 ease-in-out`}
                     >
                         Contacts
                     </button>
                     <button
                         onClick={() => handleTabChange('groups')}
-                        className={`p-2 rounded-lg ${activeTab === 'groups' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} transition duration-300 ease-in-out`}
+                        className={`p-2 rounded-lg ${activeTab === 'groups' ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-700'} transition duration-300 ease-in-out`}
                     >
                         Groups
                     </button>
                 </div>
 
-                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeTab === 'contacts' ? 'max-h-screen' : 'max-h-0'}`}>
-                    <div className="flex-grow overflow-y-scroll">
+                <div className={`transition-all overflow-y-scroll duration-300 ease-in-out ${activeTab === 'contacts' ? 'max-h-screen' : 'max-h-0'}`}>
+                    <div className="flex flex-col overflow-y-scroll">
                         {contacts.length > 0 ? (
                             contacts.map((user) => (
                                 <div

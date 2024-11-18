@@ -6,9 +6,12 @@ const login = require("../controllers/login");
 const { isAuthenticated } = require("../middleware/authMiddleware");
 const friendsList = require("../controllers/userDetails");
 const { getUser } = require("../controllers/search");
+const { sendOTP, verifyOTP } = require("../controllers/twilioConnection");
 
 router.post('/signup', registerUser);
 router.post('/login', login.loginUser)
+router.post("/generate-otp", sendOTP);
+router.post('/verify-otp', verifyOTP);
 router.get('/all-users',isAuthenticated,friendsList)
 router.get('/logout',login.logout)
 router.get('/get-details/:id',isAuthenticated,getUser)
