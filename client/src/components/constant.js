@@ -1,16 +1,7 @@
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
-require('dotenv').config();
-
-const userRoute = `${process.env.BASE_URL}${process.env.USER_ROUTE}`;
-const expenseRoute = `${process.env.BASE_URL}${process.env.EXPENSE_ROUTE}`;
-const searchRoute = `${process.env.BASE_URL}${process.env.SEARCH_ROUTE}`;
-const groupRoute = `${process.env.BASE_URL}${process.env.GROUP_ROUTE}`;
-const notificationRoute = `${process.env.BASE_URL}${process.env.NOTIFICATION_ROUTE}`;
-
-module.exports = {
-    userRoute,
-    expenseRoute,
-    searchRoute,
-    groupRoute,
-    notificationRoute,
-};
+export const userRoute = `${BASE_URL}${process.env.REACT_APP_USER_ROUTE}`;
+export const expenseRoute = `${BASE_URL}${process.env.REACT_APP_EXPENSE_ROUTE}`;
+export const searchRoute = `${BASE_URL}${process.env.REACT_APP_SEARCH_ROUTE}`;
+export const groupRoute = `${BASE_URL}${process.env.REACT_APP_GROUP_ROUTE}`;
+export const notificationRoute = `${BASE_URL}${process.env.REACT_APP_NOTIFICATION_ROUTE}`;
