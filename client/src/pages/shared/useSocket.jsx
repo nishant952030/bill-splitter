@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
+import { baseUrl } from '../../components/constant';
 
 const SocketContext = createContext();
 
@@ -7,7 +8,7 @@ export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
-        const socketIo = io("http://localhost:8000",{withCredentials:true});
+        const socketIo = io(`${baseUrl}`,{withCredentials:true});
         setSocket(socketIo);
 
         socketIo.on("connect", () => {
