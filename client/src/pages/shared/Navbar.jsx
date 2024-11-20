@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, replace } from 'react-router-dom';
 import { Bell, Menu, X } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
@@ -28,7 +28,7 @@ const Navbar = () => {
                 dispatch(setUser(null));
                 dispatch(setFriends([]));
                 setIsLoggedIn(false);
-                navigate('/')
+                navigate('/', { replace: true })
             }
         } catch (error) {
             console.log(error);
@@ -141,9 +141,9 @@ const Navbar = () => {
                                 <div className="relative">
                                     <button onClick={toggleProfileDropdown} className="focus:outline-none">
                                         <img
-                                            src="https://via.placeholder.com/40" // Replace with actual avatar
+                                            src={user?.profilePic} 
                                             alt="Avatar"
-                                            className="w-10 h-10 rounded-full"
+                                            className="w-10 h-10 rounded-full  ring-2 ring-gray-400"
                                         />
                                     </button>
 
@@ -217,10 +217,11 @@ const Navbar = () => {
                                         className="focus:outline-none w-full text-left"
                                     >
                                         <img
-                                            src="https://via.placeholder.com/40"
+                                            src={user?.profilePic}
                                             alt="Avatar"
-                                            className="w-12 h-12 rounded-full mx-auto ring-2 ring-gray-400"
+                                            className="w-10 h-10 rounded-full ring-2 ring-gray-400"
                                         />
+                                        
                                     </button>
 
                                     {isProfileOpen && (

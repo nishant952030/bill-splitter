@@ -107,6 +107,7 @@ const markAllseen = async (req, res)=> {
         const notifications = await Notification.updateMany({
             createdWith: { $in: [req.userId] }, isRead: false}, { $set: { isRead: true } }
         );
+        console.log(notifications)
         return res.status(200).json({
             message: "Notifications updated successfully.",
             success: true

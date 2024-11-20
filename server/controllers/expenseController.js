@@ -5,7 +5,7 @@ const Notification = require("../models/notification.js");
 const UserModel = require("../models/user");
 const { getIo } = require('../socketConnection.js');
 const axios = require('axios');
-const {connectedSockets} = require("../socketConnection.js");
+const { connectedSockets } = require("../socketConnection.js");
 const addExpense = async (req, res) => {
     try {
         const ioInstance = getIo();
@@ -64,33 +64,38 @@ const getRecent = async (req, res) => {
         return res.status(500).json({ error: 'Server error' });
     }
 };
-
 const getAllExpenses = async (req, res) => {
     try {
         const userId = req.userId;
         const splitWith = req.params.splitwith;
-
-        // Get page and limit from query parameters, with default values if not provided
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-
-        // Calculate the number of items to skip for pagination
         const skip = (page - 1) * limit;
 
-        // Find expenses with pagination
         const expenses = await Expense.find({
             $or: [
                 { createdBy: userId, createdWith: { $in: [splitWith] } },
                 { createdBy: splitWith, createdWith: { $in: [userId] } }
             ]
         })
-            .sort({ createdAt: -1 }) // Sort in descending order by date
+            .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
 
-        // Send paginated data to client
-        res.status(200).json({ success: true, data: expenses });
+        const total = await Expense.countDocuments({
+            $or: [
+                { createdBy: userId, createdWith: { $in: [splitWith] } },
+                { createdBy: splitWith, createdWith: { $in: [userId] } }
+            ]
+        });
 
+        res.status(200).json({
+            success: true,
+            data: expenses,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            totalExpenses: total
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({ success: false, message: 'Server error' });
@@ -107,10 +112,10 @@ const updateStatus = async (req, res) => {
         console.log(expense)
         const notification = await Notification.create({
             createdBy: userId,
-            createdWith:[expense.createdBy],
+            createdWith: [expense.createdBy],
             message: `paid you ${expense.splitAmount}`,
             type: "paidExpense",
-        }) 
+        })
         const io = getIo();
         const receiverSocketId = connectedSockets.get(expense.createdBy);
         io.to(receiverSocketId).emit('new-notification', notification);
@@ -358,7 +363,7 @@ const getGiveTake = async (req, res) => {
             ]
         });
 
-         console.log(takeExpenses)
+        console.log(takeExpenses)
         // Calculate cumulative splitAmount for both 'take' and 'give'
         const totalTake = takeExpenses.reduce((sum, expense) => sum + expense.splitAmount, 0);
         const totalGive = giveExpenses.reduce((sum, expense) => sum + expense.splitAmount, 0);
@@ -378,15 +383,57 @@ const getGiveTake = async (req, res) => {
     }
 };
 require('dotenv').config();
+const { spawn } = require('child_process');
+const path = require('path');
+
+// Function to classify expenses using a Python script
+const classifyExpenses = async (expenses) => {
+    return new Promise((resolve, reject) => {
+        const scriptPath = path.join(__dirname, 'classiferMainFunction.py');
+        const pythonProcess = spawn('python', [scriptPath]);
+
+        let resultData = '';
+        let errorData = '';
+
+        // Capture the data from the Python script's stdout
+        pythonProcess.stdout.on('data', (data) => {
+            resultData += data.toString();
+        });
+
+        // Capture any errors from the Python script's stderr
+        pythonProcess.stderr.on('data', (data) => {
+            errorData += data.toString();
+        });
+
+        // Handle the completion of the Python script
+        pythonProcess.on('close', (code) => {
+            if (code !== 0 || errorData) {
+                return reject(new Error(`Python script error: ${errorData}`));
+            }
+            try {
+                const result = JSON.parse(resultData);
+                resolve(result);
+            } catch (error) {
+                reject(new Error('Failed to parse Python output.'));
+            }
+        });
+
+        // Send the expenses data to the Python script
+        const input = JSON.stringify({ expenses });
+        pythonProcess.stdin.write(input);
+        pythonProcess.stdin.end();
+    });
+};
+
+// Endpoint to fetch expenses and classify them
 const getAllExpensesforMakingChart = async (req, res) => {
     try {
-        // Validate userId
         const userId = req.userId;
         if (!userId) {
             return res.status(400).json({ message: 'User ID is missing' });
         }
 
-        // Fetch expenses using find
+        // Fetch expenses for the user
         const expenses = await Expense.find(
             {
                 $or: [
@@ -394,18 +441,24 @@ const getAllExpensesforMakingChart = async (req, res) => {
                     { createdWith: { $in: [userId] } }
                 ]
             },
-            'splitAmount createdAt description' 
+            'splitAmount createdAt description'
         ).sort({ createdAt: -1 });
-        const classifiedData = await axios.post(`${process.env.CLASSIFY}/classify`, { expenses });
-        
+
+        // Check if expenses exist
         if (expenses.length === 0) {
             return res.status(200).json({ message: 'No expenses found for this user' });
         }
 
-        return res.status(200).json({
-            expenses, success: true, message: 'Expenses fetched successfully', classifiedData: classifiedData.data
-         });
+        // Classify expenses using the Python script
+        const classifiedData = await classifyExpenses(expenses);
 
+        // Send back the classified data and expenses
+        return res.status(200).json({
+            expenses,
+            success: true,
+            message: 'Expenses fetched successfully',
+            classifiedData,
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Something went wrong while fetching expenses' });

@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
     user:null,
     token: null,
-    
+    profilePic:'',
     contacts:[]
 };
 
@@ -20,10 +20,17 @@ export const userSlice = createSlice({
         setFriends: (state, action) => {
             state.contacts=action.payload
         },
-      
+        setProfilePic: (state, action) => {
+            if (state.user) {
+                state.user.profilePic = action.payload; 
+            } else {
+                console.error('User object is null or undefined. Cannot update profilePic.');
+            }
+        },
+
         logout: () => initialState,
     }
 });
 
-export const { setUser, setToken, logout,setFriends} = userSlice.actions;
+export const { setUser, setToken, logout,setFriends,setProfilePic} = userSlice.actions;
 export default userSlice.reducer;

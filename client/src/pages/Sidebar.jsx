@@ -100,11 +100,17 @@ const Sidebar = () => {
                                         }
                                         handleClick(user._id);
                                     }}
-                                    className="p-4 bg-white rounded-lg mb-2 shadow hover:shadow-md hover:bg-gray-50 transition duration-300 ease-in-out cursor-pointer"
+                                    className="p-3 bg-white rounded-lg mb-2 shadow hover:shadow-md hover:bg-gray-50 transition duration-300 ease-in-out cursor-pointer"
                                 >
-                                    <h2 className="text-lg font-semibold mb-1 text-gray-700 capitalize">
-                                        {user.name}
-                                    </h2>
+                                    <div className='flex gap-3'>
+                                        <div className='w-12 h-12 bg-slate-400 rounded-full'>
+                                       <img  className="rounded-full w-12 h-12" src={user.profilePic}></img>
+                                        </div>
+                                        <h2 className="text-lg font-semibold mb-1 text-gray-700 capitalize">
+                                            {user.name}
+                                        </h2>
+
+                                    </div>
                                 </div>
                             ))
                         ) : (

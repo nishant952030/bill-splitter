@@ -6,5 +6,5 @@ const router = express.Router();
 router.post(`/create-notification/:splitWith`, isAuthenticated, createNotificationsForIndividual);
 router.get(`/get-notifications`, isAuthenticated, getNotifications);
 router.get(`/update-notification/:notification`, isAuthenticated, updateNotification);
-router.get(`/mark-all-seen`, isAuthenticated, markAllseen);
+router.get('/mark-all-seen', isAuthenticated, markAllseen);
 module.exports=router

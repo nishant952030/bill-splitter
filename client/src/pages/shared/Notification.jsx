@@ -67,7 +67,7 @@ const Notification = () => {
     // Mark all notifications as seen
     const markAllSeen = async () => {
         try {
-            await axios.post(`${notificationRoute}/mark-all-seen`, {}, { withCredentials: true });
+            await axios.get(`${notificationRoute}/mark-all-seen`, { withCredentials: true });
             setNotifications((prevNotifications) =>
                 prevNotifications.map((notification) => ({
                     ...notification,

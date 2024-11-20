@@ -6,7 +6,7 @@ import Sidebar from './Sidebar';
 import { RotateCcw } from 'lucide-react';
 import { expenseRoute, userRoute } from '../components/constant';
 import { useDispatch, useSelector } from 'react-redux';
-import { setFriends } from '../redux';
+import { setFriends, setProfilePic } from '../redux';
 import { useSocket } from './shared/useSocket';
 
 const Home = () => {
@@ -29,8 +29,10 @@ const Home = () => {
         }
     }, [socket, user?._id]);
 
-
-    // Fetch friends list
+   
+    useEffect(() => {
+          dispatch(setProfilePic(user.profilePic))     
+    },[])
     useEffect(() => {
         const listUsers = async () => {
             try {
