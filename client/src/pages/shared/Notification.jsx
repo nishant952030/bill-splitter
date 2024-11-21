@@ -161,7 +161,7 @@ const Notification = () => {
     };
 
     return (
-        <div className={`h-[60vh] ${fullScreen ? "w-[100vw] top-20 -right-12" :"w-96 top-20 right-0"}  flex flex-col gap-4 pb-4 bg-gray-800 absolute transition-transform duration-500 ease-in-out overflow-y-auto shadow-lg rounded-md`}>
+        <div className={`h-[60vh] ${fullScreen ? "w-[100vw] top-16 -right-12" :"w-96 top-16 right-0"}  flex flex-col gap-4 pb-4 bg-gray-800 absolute transition-transform duration-500 ease-in-out overflow-y-auto shadow-lg rounded-md`}>
             <div className="flex justify-between px-4 pt-4">
                 <div className="text-white">
                     {notifications.length} unseen
