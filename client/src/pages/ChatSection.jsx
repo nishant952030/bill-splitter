@@ -7,7 +7,9 @@ import ChatMessage from './Chat';
 import { expenseRoute, notificationRoute, userRoute } from '../components/constant';
 import { useSpring, animated } from '@react-spring/web';
 import { useSocket } from './shared/useSocket';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { setLatestTransaction } from '../redux';
+
 
 const AnimatedNumber = ({ value }) => {
   const { number } = useSpring({
@@ -37,7 +39,7 @@ const ChatSection = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [showPic, setShowPic] = useState(false);
-
+  const dispatch=useDispatch();
   // Fetch User Details
   useEffect(() => {
     const fetchUser = async () => {
@@ -160,8 +162,8 @@ const ChatSection = () => {
           description: newExpenseData.description,
           createdWith: [newExpenseData.createdWith[0]._id],
         };
-
-        // Add new expense to dummy and reload first page
+        dispatch(setLatestTransaction(newExpenseData));
+       console.log(newExpenseData);
         setDummy(prev => [newObject, ...prev]);
         socket.emit('new-expense', newExpenseData);
 
@@ -250,8 +252,6 @@ const ChatSection = () => {
 
       {/* Chat/Expense List Section */}
       <div ref={chatContainerRef} className="flex flex-col-reverse overflow-y-auto p-4 space-y-2">
-        
-
         {chats.length === 0 ? (
           <h1 className='text-center pb-3'>No Gain No Pain</h1>
         ) : (

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const registerUser = require("../controllers/signup");
+const {registerUser, signUpWithOtp, verifyOtp} = require("../controllers/signup");
 const login = require("../controllers/login");
 
 const { isAuthenticated } = require("../middleware/authMiddleware");
@@ -9,6 +9,8 @@ const { getUser } = require("../controllers/search");
 const upload = require("../middleware/multer");
 
 router.post('/signup', registerUser);
+router.post('/signup-otp', signUpWithOtp);
+router.post('/verify-otp', verifyOtp);
 router.post('/login', login.loginUser)
 router.get('/all-users',isAuthenticated,friendsList)
 router.get('/logout',login.logout)

@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
     requests: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref:"Request"
+            ref: "Request"
         }
     ],
     expenses: [
@@ -38,8 +38,17 @@ const userSchema = new mongoose.Schema({
     profilePic: {
         type: String,
         default: '',
+    },
+    otp: {
+        type: String,
+    },
+    otpGeneratedAt: {
+        type: Date,
+    },
+    isVerified: {
+        type: Boolean,
+        default: false,
     }
-
 });
 
 module.exports = mongoose.model('User', userSchema);

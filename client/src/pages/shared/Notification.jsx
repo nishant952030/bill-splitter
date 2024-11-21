@@ -9,21 +9,7 @@ const Notification = () => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-
     const socket = useSocket();
-
-    // Fetch the createdBy name for notifications
-    const getCreatedByName = async (createdBy) => {
-        try {
-            const res = await axios.get(`${userRoute}/get-details/${createdBy}`, { withCredentials: true });
-            return res.data.data.name;
-        } catch (error) {
-            console.error("Error fetching createdBy name:", error);
-            return "Unknown";
-        }
-    };
-
-    // Socket listener for new notifications
     useEffect(() => {
         if (socket) {
             const handleNewNotification = async (notification) => {
@@ -86,7 +72,8 @@ const Notification = () => {
 
     // Function to handle viewing an expense notification
     const viewNotification = (notification) => {
-        navigate(`/expenses/${notification.expenseId}`);
+        console.log("Viewing notification:", notification);
+        navigate(`/home/user/${notification.createdBy._id}`);
     };
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [fullScreen, setIsSidebarVisible] = useState(false);
@@ -143,6 +130,7 @@ const Notification = () => {
             case 'paidExpense':
                 return (
                     <div
+                        onClick={() => viewNotification(notification)}
                         key={notification._id}
                         className="relative flex items-center bg-green-100 p-3 rounded-lg shadow-md hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105"
                     >

@@ -22,7 +22,7 @@ const searchUser = async (req, res) => {
             });
         }
 
-        if (user._id.equals(userId)) { // Using equals for ObjectId comparison
+        if (user._id.equals(userId)) {
             return res.status(200).json({
                 success: true,
                 data: user,
@@ -42,7 +42,6 @@ const searchUser = async (req, res) => {
             });
         }
 
-        // Updated query to handle both sent and received requests
         const requested = await Request.findOne({
             $or: [
                 { senderId: userId, recieverId: user._id },
@@ -89,18 +88,18 @@ const addUser = async (req, res) => {
         const user = await UserModel.findOne({ _id: otherUserId });
         const { name } = await UserModel.findOne({ _id: userId }, 'name');
 
-        // Create a friend request
+       
         const request = await Request.create({
             senderId: userId,
             recieverId: otherUserId
         });
         await request.save();
 
-        // Add request ID to the user's requests array
+       
         user.requests.push(request._id);
         await user.save();
 
-        // Create a notification for the friend request
+       
         const notification = await Notification.create({
             createdBy: userId,
             createdWith: [otherUserId],

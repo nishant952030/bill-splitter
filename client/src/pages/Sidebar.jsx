@@ -5,19 +5,22 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { groupRoute } from '../components/constant';
 import axios from 'axios';
 
+
 const Sidebar = () => {
     const contacts = useSelector((store) => store.user.contacts);
-
+    console.log("contacts",contacts)
     const navigate = useNavigate();
 
     const handleClick = (id) => {
         navigate(`/home/user/${id}`);
     };
-
+    
     const handleGroupClick = (id) => {
         navigate(`/home/group/${id}`);
     };
-
+    useEffect(() => {
+         console.log("Re running because  new expense is added in it ")
+     },[contacts])
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [activeTab, setActiveTab] = useState('contacts');
@@ -93,23 +96,25 @@ const Sidebar = () => {
                         {contacts.length > 0 ? (
                             contacts.map((user) => (
                                 <div
-                                    key={user._id}
+                                    key={user.contactId}
                                     onClick={() => {
                                         if (screenWidth < 840) {
                                             setIsSidebarVisible(false);
                                         }
-                                        handleClick(user._id);
+                                        handleClick(user?.contactId);
                                     }}
                                     className="p-3 bg-white rounded-lg mb-2 shadow hover:shadow-md hover:bg-gray-50 transition duration-300 ease-in-out cursor-pointer"
                                 >
                                     <div className='flex gap-3'>
                                         <div className='w-12 h-12 bg-slate-400 rounded-full'>
-                                       <img  className="rounded-full w-12 h-12" src={user.profilePic}></img>
+                                       <img  className="rounded-full w-12 h-12" src={user?.profilePic}></img>
                                         </div>
+                                        <div>
                                         <h2 className="text-lg font-semibold mb-1 text-gray-700 capitalize">
                                             {user.name}
-                                        </h2>
-
+                                            </h2>
+                                            <p className='-mt-1 text-gray-600 font-light text-sm'>{user?.contactId===user?.expense?.createdBy?user?.name:"You"}: Splitted  {user?.expense?2*user?.expense?.splitAmount:"nothing"}</p>
+                                         </div>
                                     </div>
                                 </div>
                             ))

@@ -8,8 +8,6 @@ const generateAuthToken = (user) => {
     return token;
 };
 
-
-
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -38,19 +36,6 @@ const loginUser = async (req, res) => {
             httpOnly: true,
             secure: true, 
             sameSite: 'None',
-            maxAge: 3600000
-        });
-        
-        console.log('Setting cookie:', {
-            name: 'token',
-            value: token.substring(0, 10) + '...',  
-            options: {
-                httpOnly: true,
-                secure: false,
-                sameSite: 'Lax',
-                path: '/',
-                maxAge: 3600000
-            }
         });
 
         return res.status(200).json({

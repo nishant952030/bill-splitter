@@ -21,7 +21,7 @@ const Login = () => {
                 email,
                 password,
             }, { withCredentials: true });
-            
+            console.log(response)
             if (response.data.success) {
                 navigate("/home",{replace: true});
                 setMessage(response.data.message);

@@ -62,7 +62,7 @@ const GroupModal = ({ onClose }) => {
                             <label key={user._id} className="flex items-center text-white capitalize">
                                 <input
                                     type="checkbox"
-                                    value={user._id}
+                                    value={user.contactId}
                                     onChange={handleUserSelect}
                                     className="mr-3 w-5 h-5 bg-slate-700 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                                 />
