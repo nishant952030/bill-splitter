@@ -383,47 +383,6 @@ const getGiveTake = async (req, res) => {
     }
 };
 require('dotenv').config();
-const { spawn } = require('child_process');
-const path = require('path');
-
-// Function to classify expenses using a Python script
-const classifyExpenses = async (expenses) => {
-    return new Promise((resolve, reject) => {
-        const scriptPath = path.join(__dirname, 'classiferMainFunction.py');
-        const pythonProcess = spawn('python', [scriptPath]);
-
-        let resultData = '';
-        let errorData = '';
-
-        // Capture the data from the Python script's stdout
-        pythonProcess.stdout.on('data', (data) => {
-            resultData += data.toString();
-        });
-
-        // Capture any errors from the Python script's stderr
-        pythonProcess.stderr.on('data', (data) => {
-            errorData += data.toString();
-        });
-
-        // Handle the completion of the Python script
-        pythonProcess.on('close', (code) => {
-            if (code !== 0 || errorData) {
-                return reject(new Error(`Python script error: ${errorData}`));
-            }
-            try {
-                const result = JSON.parse(resultData);
-                resolve(result);
-            } catch (error) {
-                reject(new Error('Failed to parse Python output.'));
-            }
-        });
-
-        // Send the expenses data to the Python script
-        const input = JSON.stringify({ expenses });
-        pythonProcess.stdin.write(input);
-        pythonProcess.stdin.end();
-    });
-};
 
 // Endpoint to fetch expenses and classify them
 const getAllExpensesforMakingChart = async (req, res) => {
@@ -443,16 +402,15 @@ const getAllExpensesforMakingChart = async (req, res) => {
             },
             'splitAmount createdAt description'
         ).sort({ createdAt: -1 });
+        if (!expenses.every(e => 'description' in e && 'splitAmount' in e && 'createdAt' in e)) {
+            return res.status(400).json({ message: 'Invalid expense data structure' });
+        }
 
-        // Check if expenses exist
+        const { data: classifiedData } = await axios.post(`${process.env.CLASSIFY}/classify`, { expenses });
+
         if (expenses.length === 0) {
             return res.status(200).json({ message: 'No expenses found for this user' });
         }
-
-        // Classify expenses using the Python script
-        const classifiedData = await classifyExpenses(expenses);
-
-        // Send back the classified data and expenses
         return res.status(200).json({
             expenses,
             success: true,

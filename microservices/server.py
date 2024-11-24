@@ -3,6 +3,9 @@ from classiferMainFunction import IndianExpenseCategorizer
 
 # Initialize the Flask app
 app = Flask(__name__)
+from flask_cors import CORS
+
+CORS(app)
 
 # Initialize the expense categorizer
 categorizer = IndianExpenseCategorizer()
@@ -12,6 +15,7 @@ categorizer = IndianExpenseCategorizer()
 
 def classify_expenses():
     try:
+
         data = request.get_json()
         if not data or "expenses" not in data:
             return (
