@@ -3,9 +3,6 @@ from classiferMainFunction import IndianExpenseCategorizer
 
 # Initialize the Flask app
 app = Flask(__name__)
-from flask_cors import CORS
-
-CORS(app)
 
 # Initialize the expense categorizer
 categorizer = IndianExpenseCategorizer()
