@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from classiferMainFunction import IndianExpenseCategorizer
+import os
 
 # Initialize the Flask app
 app = Flask(__name__)
@@ -9,10 +10,8 @@ categorizer = IndianExpenseCategorizer()
 
 
 @app.route("/classify", methods=["POST"])
-
 def classify_expenses():
     try:
-
         data = request.get_json()
         if not data or "expenses" not in data:
             return (
@@ -31,4 +30,7 @@ def classify_expenses():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(
+        os.environ.get("PORT", 5000)
+    )  # Use Render's port, default to 5000 locally
+    app.run(host="0.0.0.0", port=port)
